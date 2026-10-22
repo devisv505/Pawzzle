@@ -1,4 +1,4 @@
-# Mini Factory — prototype 1
+# Hueline — prototype 1
 
 An automation game with no spreadsheets in it. Ore deposits drop primary
 colours, mixers combine two different colours into a new one, and shops want
@@ -12,6 +12,7 @@ Play it at `prototype_1/` (see **Running it** below).
 |---|---|
 | **Ore deposit** | Drops one ore every few seconds: Ruby, Cobalt or Amber. It only sends. |
 | **Mixer** | Holds up to six items and combines any two colours that react. |
+| **Splitter** | One belt in, two or more out, fed in turn. Researched, then bought. |
 | **Shop** | Wants one colour. Every matching delivery is a point. |
 | **Belt** | A one-way lane from a deposit or mixer into a mixer or shop. |
 | **Bridge** | Spent where one belt has to hop another. You start with two. |
@@ -40,9 +41,29 @@ Fern do nothing, because Fern already contains blue.
    out fifteen seconds later, which ends the run. Tap a flashing machine to
    dump its buffer for five points — the escape hatch when a route goes wrong.
 
-Every six deliveries the shift ends and you pick an upgrade: more tiles, another
-bridge, a second mixer, faster belts, a new deposit. New shops and machines keep
-arriving, and a new shop only ever asks for a colour the floor can already make.
+## Credits, the store and the lab
+
+Every delivery pays credits by how deep the colour is: a primary is 1, a mix 2,
+and Slate 4. The big number under the floor is still orders delivered; credits
+are what you spend.
+
+The **store** sells belt tiles and bridges outright, and mixers, splitters and
+ore deposits as machines you then **drop wherever you want** — the board shows a
+ghost under the cursor and a green box when the spot is clear, and nothing is
+charged until you put it down. Machines need a cell of air around them and
+cannot sit on a running belt.
+
+The **lab** sells research, which is permanent:
+
+| Tech | What it buys you |
+|---|---|
+| Splitters | Unlocks the splitter in the store |
+| Express belts | 20% quicker, twice over |
+| Wider buffers | Mixers hold eight instead of six |
+| Reinforced machines | An overflowing machine holds on half as long again |
+
+Only shops arrive on their own now, and only ever asking for a colour the floor
+can already make. Everything that supplies them, you buy and place yourself.
 
 ## Drawing a belt
 
@@ -64,22 +85,32 @@ on a machine to lay it, anywhere else to throw it away.
 | `js/main.js` | Screens, upgrades, the heads-up display, the frame loop |
 | `js/fx.js`, `js/audio.js` | Bursts, toasts, confetti and synthesized blips |
 | `tests/factory.test.mjs` | The rules above, as assertions |
+| `docs/ASSET_PROMPTS.md` | Prompts for generating the icon art |
+| `docs/reference/factory.webp` | Style reference to attach to those prompts |
 
 `config.js`, `world.js` and `sim.js` never touch the DOM, so the whole game can
 be run headless — which is what the tests do.
+
+## Art
+
+Everything on the floor is drawn to canvas and every icon is an inline SVG
+symbol, so the prototype ships with no image files at all. `docs/ASSET_PROMPTS.md`
+holds the prompts if you want generated icon art instead, along with the palette,
+the slicing command and a note on what you give up by swapping SVG for PNG.
 
 ## Running it
 
 ```sh
 npm start                 # serves the repo; open /prototype_1/
-npm test                  # runs the Pawzzle and Mini Factory tests
+npm test                  # runs the Pawzzle and Hueline tests
 ```
 
 Module scripts do not load from `file://`, so it needs a server.
 
 ## Where it would go next
 
-- Splitters and mergers, so one deposit can feed two mixers without a second belt.
+- Mergers, to go with the splitters.
 - A mixer that can be told which recipe to prefer, for when three colours arrive.
+- Selling a machine back, or picking one up and moving it.
 - Hand-authored levels with a fixed belt budget, scored like a puzzle rather than a run.
 - Belt speed per lane, so the interesting decision is where to spend the fast ones.
