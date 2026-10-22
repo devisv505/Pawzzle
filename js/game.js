@@ -416,7 +416,7 @@ export class Game {
     const { p } = pet;
     const size = p.cells.length;
     pet.purring = true;
-    startPurr({ rate: 30 - size * 1.5, tone: 400 - size * 25 });
+    startPurr(size);
     if (!p.at) renderPiece(p.svg, p, 'happy');
     p.svg.classList.add('purring');
     const face = Math.max(0, p.decor.indexOf('face'));

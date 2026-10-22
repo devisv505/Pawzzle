@@ -49,6 +49,21 @@ How the integration works:
   events at boot and a "happy time" event when a level is won, and follows the
   site's mute setting.
 
+## Sound effects
+
+The sounds are made with the ElevenLabs sound effects API. Put
+`ELEVENLABS_API_KEY=...` in `.env` (it's git-ignored) and install ffmpeg, then:
+
+```sh
+python3 tools/generate_sounds.py             # generate missing sounds
+python3 tools/generate_sounds.py place win   # generate these again
+```
+
+The prompts and lengths are at the top of the script. Each download is kept in
+`assets/raw/sounds/`, and the trimmed, level-matched copy the game loads goes
+to `assets/sounds/`. Playback volume and pitch for each sound are in
+`js/audio.js`.
+
 ## Project layout
 
 | Path | What |
@@ -58,10 +73,13 @@ How the integration works:
 | `js/piece.js` | Draws a jelly piece as SVG, with its cat stickers |
 | `js/game.js` | Board, tray, drag and drop, hints, tutorial, win |
 | `js/main.js` | Title screen, popups, settings, saved progress |
-| `js/audio.js`, `js/fx.js` | Synthesized sounds, particles and confetti |
+| `js/audio.js`, `js/fx.js` | Sound effects, particles and confetti |
 | `js/platform.js` | CrazyGames SDK: saves, rewarded videos, gameplay events |
 | `assets/fonts/` | Fredoka font, self-hosted (SIL Open Font License) |
 | `tools/package_crazygames.py` | Builds the CrazyGames upload zip |
+| `tools/generate_sounds.py` | Makes the sound effects with ElevenLabs |
+| `assets/sounds/` | Sound effects the game loads |
 | `assets/raw/` | Approved AI-generated sheets |
 | `assets/img/` | Sprites cut from those sheets (`tools/build_sprites.sh`) |
+| `assets/raw/sounds/` | ElevenLabs downloads, before trimming |
 | `docs/ASSET_PROMPTS.md` | Prompts used to generate the art |
