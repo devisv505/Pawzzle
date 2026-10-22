@@ -31,16 +31,6 @@ function writeSave() {
 
 let current = Math.min(save.last, save.unlocked);
 
-// Brand art is optional: if it is missing, the page falls back to text and cat faces.
-document.querySelectorAll('img[data-optional]').forEach((img) => {
-  const fail = () => {
-    document.body.classList.add(img.dataset.optional);
-    img.remove();
-  };
-  if (img.complete && !img.naturalWidth) fail();
-  else img.addEventListener('error', fail);
-});
-
 installDefs();
 setSoundEnabled(save.sound);
 
