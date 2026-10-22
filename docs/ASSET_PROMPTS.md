@@ -130,6 +130,9 @@ Background: fully transparent PNG (fallback: solid flat #FF00FF magenta).
 ### 04 · `tails.png`: curly tails (1536×1024)
 Shown on the end cell of pieces, like the orange piece in the mockup.
 
+> Done. Upright and centered, these tails read as a "?", so the game mirrors each one
+> and tilts it away from the cat's head.
+
 ```
 Image 1 is the art-style reference (see the curly tail on the orange block at the top). Image 2 is the approved cat style: match its colors and line weight.
 
@@ -306,9 +309,9 @@ Background: fully transparent PNG (fallback: solid flat #FF00FF magenta).
 | 01 | `faces_idle.png` | 1536×1024 | core | ✅ done |
 | 02 | `faces_happy.png` | 1536×1024 | core | ✅ done |
 | 03 | `cats_sleeping.png` | 1536×1024 | core | ✅ done |
-| 04 | `tails.png` | 1536×1024 | core |  |
-| 05 | `specials.png` | 1024×1024 | core |  |
-| 06 | `tiles.png` | 1024×1024 | core |  |
+| 04 | `tails.png` | 1536×1024 | core | ✅ done |
+| 05 | `specials.png` | 1024×1024 | core | ✅ done |
+| 06 | `tiles.png` | 1024×1024 | core | ✅ done |
 | 07 | `icons.png` | 1024×1024 | core |  |
 | 08 | `bg_wood.png` | 1024×1024 | core |  |
 | 09 | `decor.png` | 1024×1024 | core |  |

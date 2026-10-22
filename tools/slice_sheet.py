@@ -6,8 +6,11 @@
         --out assets/img/faces --prefix idle- --size 256 --frame 510
 
 Items are found by scanning for empty gaps between them, so the sheet does not
-need a perfect grid. Every sprite gets the same square frame (sized to the
-largest item) so items keep their relative size and line up when swapped.
+need a perfect grid. --fit picks how each item lands in its square sprite:
+  sheet    one shared frame sized to the largest item, so variants of the same
+           thing (colors, expressions) keep their relative size (default)
+  item     each item gets its own frame, for unrelated stickers of mixed shapes
+  stretch  each item is scaled to fill the square exactly, for board tiles
 Use --key ff00ff for sheets that came back with a flat magenta background.
 """
 import argparse
@@ -65,8 +68,9 @@ def main():
     p.add_argument("--prefix", default="")
     p.add_argument("--size", type=int, default=256, help="output square size in px")
     p.add_argument("--pad", type=float, default=0.04, help="empty margin, fraction of frame")
-    p.add_argument("--frame", type=int, help="fixed frame side in sheet px; use the same value "
-                   "for sheets whose sprites swap (e.g. face expressions) so they share one scale")
+    p.add_argument("--fit", choices=("sheet", "item", "stretch"), default="sheet")
+    p.add_argument("--frame", type=int, help="fixed frame side in sheet px for --fit sheet; use the "
+                   "same value for sheets whose sprites swap (e.g. face expressions) so they share one scale")
     p.add_argument("--key", help="hex background color to remove, e.g. ff00ff")
     args = p.parse_args()
 
@@ -94,9 +98,13 @@ def main():
         p.error(f"--frame {frame} is smaller than the largest item ({largest}px)")
     os.makedirs(args.out, exist_ok=True)
     for name, item in zip(names, items):
-        canvas = Image.new("RGBA", (frame, frame), (0, 0, 0, 0))
-        canvas.paste(item, ((frame - item.width) // 2, (frame - item.height) // 2))
-        canvas = canvas.resize((args.size, args.size), Image.LANCZOS)
+        if args.fit == "stretch":
+            canvas = item.resize((args.size, args.size), Image.LANCZOS)
+        else:
+            side = frame if args.fit == "sheet" else int(max(item.size) * (1 + 2 * args.pad))
+            canvas = Image.new("RGBA", (side, side), (0, 0, 0, 0))
+            canvas.paste(item, ((side - item.width) // 2, (side - item.height) // 2))
+            canvas = canvas.resize((args.size, args.size), Image.LANCZOS)
         path = os.path.join(args.out, f"{args.prefix}{name}.png")
         canvas.save(path, optimize=True)
         print(f"{path}  ({item.width}x{item.height} in sheet)")
