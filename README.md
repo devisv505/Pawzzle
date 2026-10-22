@@ -26,6 +26,29 @@ because browsers block JavaScript modules on `file://`.
 3. Pick the branch with the game and the **/ (root)** folder, then **Save**.
 4. After a minute the game is live at `https://<user>.github.io/Pawzzle/`.
 
+## Publish on CrazyGames
+
+1. Run `npm run package`. It writes `dist/pawzzle-crazygames.zip`, with
+   `index.html` at the root and only the files the game loads (about 800 KB).
+2. In the CrazyGames developer portal, submit an HTML5 game and upload the zip.
+3. In the submission form, turn on saving progress. The SDK's data module is
+   off without it.
+4. Test in CrazyGames' QA tool before release. It shows test ads, and saved
+   data works there but doesn't sync to player accounts.
+
+How the integration works:
+
+- `js/platform.js` is the only file that talks to CrazyGames (SDK v3). Off
+  CrazyGames (GitHub Pages, offline, SDK blocked) it falls back to
+  `localStorage`, and there are no ads.
+- Progress (levels, stars, sound setting, hint balance) is saved through the
+  SDK's data module, so logged-in players keep it across devices.
+- New players get 3 free hints (`FREE_HINTS` in `js/main.js`). After that, a
+  hint costs a rewarded video. Off CrazyGames, hints stay free.
+- The game reports gameplay start and stop around popups and ads, sends loading
+  events at boot and a "happy time" event when a level is won, and follows the
+  site's mute setting.
+
 ## Project layout
 
 | Path | What |
@@ -36,15 +59,9 @@ because browsers block JavaScript modules on `file://`.
 | `js/game.js` | Board, tray, drag and drop, hints, tutorial, win |
 | `js/main.js` | Title screen, popups, settings, saved progress |
 | `js/audio.js`, `js/fx.js` | Synthesized sounds, particles and confetti |
+| `js/platform.js` | CrazyGames SDK: saves, rewarded videos, gameplay events |
+| `assets/fonts/` | Fredoka font, self-hosted (SIL Open Font License) |
+| `tools/package_crazygames.py` | Builds the CrazyGames upload zip |
 | `assets/raw/` | Approved AI-generated sheets |
 | `assets/img/` | Sprites cut from those sheets (`tools/build_sprites.sh`) |
 | `docs/ASSET_PROMPTS.md` | Prompts used to generate the art |
-| `prototype_1/` | Mini Factory: a separate colour-mixing automation prototype |
-
-## Prototypes
-
-`prototype_1/` is **Mini Factory**, a standalone experiment in the same repo:
-draw conveyor belts from ore deposits into mixers, combine two primary colours
-into a third, and keep the shops supplied without choking a machine. Serve the
-repo and open `/prototype_1/`. It has its own
-[README](prototype_1/README.md) and its own tests, both run by `npm test`.

@@ -1,3 +1,24 @@
+@font-face {
+  font-family: 'Fredoka';
+  font-weight: 500;
+  font-display: swap;
+  src: url(../assets/fonts/fredoka-latin-500-normal.woff2) format('woff2');
+}
+
+@font-face {
+  font-family: 'Fredoka';
+  font-weight: 600;
+  font-display: swap;
+  src: url(../assets/fonts/fredoka-latin-600-normal.woff2) format('woff2');
+}
+
+@font-face {
+  font-family: 'Fredoka';
+  font-weight: 700;
+  font-display: swap;
+  src: url(../assets/fonts/fredoka-latin-700-normal.woff2) format('woff2');
+}
+
 :root {
   --brown: #733113;
   --brown-soft: #9a5a32;
@@ -150,6 +171,7 @@ button {
 }
 
 .round {
+  position: relative;
   display: grid;
   place-items: center;
   width: 52px;
@@ -166,6 +188,41 @@ button {
 .round img {
   width: 64%;
   pointer-events: none;
+}
+
+/* Hint count, or a play symbol when the next hint costs a video. */
+.badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  display: grid;
+  place-items: center;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 6px;
+  border: 2px solid #fff;
+  border-radius: 12px;
+  background: #f2645a;
+  box-shadow: 0 2px 4px rgba(115, 49, 19, 0.3);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1;
+  pointer-events: none;
+}
+
+.badge[hidden] {
+  display: none;
+}
+
+.badge.video {
+  padding: 0 4px;
+  background: #66b947;
+}
+
+.round .badge img {
+  width: 12px;
+  filter: brightness(0) invert(1);
 }
 
 .round:active {
@@ -537,6 +594,12 @@ svg.piece.purring .hit {
   transform: translateY(3px) scale(0.97);
 }
 
+.btn:disabled {
+  opacity: 0.55;
+  animation: none;
+  cursor: default;
+}
+
 .btn.secondary {
   background: linear-gradient(#ffc27e, #fb9a45);
   box-shadow: inset 0 -5px 0 #d9702a, inset 0 2px 0 rgba(255, 255, 255, 0.5), 0 5px 10px rgba(181, 80, 28, 0.3);
@@ -642,6 +705,41 @@ svg.piece.purring .hit {
   font-size: 14px;
   font-weight: 500;
   color: var(--brown-soft);
+}
+
+.offer-icon {
+  display: block;
+  width: 84px;
+  margin: 0 auto;
+  animation: bob 2.4s ease-in-out infinite;
+}
+
+.toast {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 28%;
+  z-index: 85;
+  width: fit-content;
+  max-width: 86vw;
+  margin: 0 auto;
+  padding: 10px 18px;
+  border-radius: 16px;
+  background: rgba(115, 49, 19, 0.92);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+  text-align: center;
+  pointer-events: none;
+}
+
+.toast[hidden] {
+  display: none;
+}
+
+.toast.show {
+  animation: toast 2.8s ease-out both;
 }
 
 .stars {
@@ -938,6 +1036,21 @@ svg.piece.purring .hit {
 @keyframes purr {
   50% {
     transform: translate(2.5px, -2px) rotate(0.8deg);
+  }
+}
+
+@keyframes toast {
+  0% {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  10%,
+  85% {
+    opacity: 1;
+    transform: none;
+  }
+  100% {
+    opacity: 0;
   }
 }
 

@@ -7,9 +7,7 @@
   <meta name="description" content="Pawzzle: fit the jelly cat pieces into the grid until every cell is covered.">
   <title>Pawzzle</title>
   <link rel="icon" type="image/webp" href="assets/img/faces/happy-orange.webp">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap">
+  <link rel="preload" href="assets/fonts/fredoka-latin-600-normal.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -27,7 +25,7 @@
         <small>Level</small><b id="level-num">1</b>
       </button>
       <div class="buttons">
-        <button class="round" id="btn-hint" aria-label="Hint"><img src="assets/img/icons/hint.webp" alt=""></button>
+        <button class="round" id="btn-hint" aria-label="Hint"><img src="assets/img/icons/hint.webp" alt=""><span class="badge" id="hint-badge" hidden></span></button>
         <button class="round" id="btn-settings" aria-label="Settings"><img src="assets/img/icons/settings.webp" alt=""></button>
       </div>
     </header>
@@ -68,7 +66,7 @@
         <img src="assets/img/faces/happy-blue.webp" alt="">
       </div>
       <p class="title-hint">Fit every cat into the grid!</p>
-      <button class="btn big pulse" id="btn-play"><img src="assets/img/icons/play.webp" alt=""> <span>Play</span></button>
+      <button class="btn big pulse" id="btn-play" disabled><img src="assets/img/icons/play.webp" alt=""> <span>Play</span></button>
       <p class="title-level">Level <b id="title-level">1</b></p>
     </div>
   </div>
@@ -99,6 +97,20 @@
       <p class="card-text small">Tip: tap a piece in the tray to rotate it. While dragging, tap with a second finger, press R or scroll to rotate. Stroke a cat up and down with the mouse to make it purr.</p>
     </div>
   </div>
+
+  <div class="overlay" id="hint-offer" hidden>
+    <div class="card">
+      <div class="ribbon"><span>Need a hint?</span></div>
+      <button class="round close" data-close aria-label="Close"><img src="assets/img/icons/close.webp" alt=""></button>
+      <img class="offer-icon" src="assets/img/icons/hint.webp" alt="">
+      <p class="card-text">You're out of free hints. Watch a short video and a cat will jump into its spot.</p>
+      <div class="actions">
+        <button class="btn pulse" id="btn-watch"><img src="assets/img/icons/play.webp" alt=""> <span>Watch video</span></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" hidden></div>
 
   <div class="overlay" id="levels" hidden>
     <div class="card">
