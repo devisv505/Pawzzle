@@ -1,13 +1,18 @@
 // One level of play: the board, the tray, and dragging pieces between them.
 import { generateLevel } from './level.js';
 import { createPieceSVG, renderPiece, rotateCells, extent } from './piece.js';
-import { sfx } from './audio.js';
-import { burst, sparkles, confetti, reducedMotion } from './fx.js';
+import { sfx, startPurr, stopPurr } from './audio.js';
+import { burst, sparkles, confetti, heart, reducedMotion } from './fx.js';
 
 const key = (c, r) => `${c},${r}`;
 const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
 const HAND_TIP = [0.16, 0.07]; // fingertip position within hand.webp
 const IDLE_NUDGE_MS = 25000;
+// Stroking a cat: this much vertical travel is one stroke, and this many
+// strokes with no long pause between them start the purr.
+const PET_STROKE_PX = 12;
+const PET_STROKES = 3;
+const PET_GAP_MS = 650;
 
 export class Game {
   constructor(els, { onWin, onProgress, onIdle } = {}) {
@@ -22,6 +27,10 @@ export class Game {
 
     els.tray.addEventListener('pointerdown', (e) => this.pointerDown(e, 'tray'));
     els.pieces.addEventListener('pointerdown', (e) => this.pointerDown(e, 'board'));
+    for (const area of [els.tray, els.pieces]) {
+      area.addEventListener('pointermove', (e) => this.petMove(e));
+      area.addEventListener('pointerleave', () => this.petEnd());
+    }
     // A second finger, the R key, space or the mouse wheel rotates the piece being dragged.
     window.addEventListener('pointerdown', (e) => this.drag?.started && e.pointerId !== this.drag.id && this.rotateDragged(e), true);
     window.addEventListener('keydown', (e) => {
@@ -34,6 +43,7 @@ export class Game {
   }
 
   load(n) {
+    this.petEnd();
     const lvl = (this.level = generateLevel(n));
     const { tiles, highlights, pieces, tray, board } = this.els;
     this.occ = new Map();
@@ -125,6 +135,7 @@ export class Game {
   // ---- pointer handling -------------------------------------------------
 
   pointerDown(e, where) {
+    this.petEnd();
     if (this.won || this.busy || this.drag || e.button > 0) return;
     const el = where === 'tray' ? e.target.closest('.slot') : e.target.closest('svg.piece');
     const p = el && this.byId.get(+el.dataset.id);
@@ -353,6 +364,69 @@ export class Game {
     this.idleTimer = setTimeout(() => !this.won && this.onIdle?.(true), IDLE_NUDGE_MS);
   }
 
+  // ---- petting -------------------------------------------------------------
+
+  // Hovering the mouse up and down over a cat strokes it; enough strokes and it purrs.
+  petMove(e) {
+    const el = e.pointerType !== 'touch' && !e.buttons && !this.drag && !this.won && e.target.closest('svg.piece');
+    const p = el && this.byId.get(+el.dataset.id);
+    if (!p) return this.petEnd();
+    if (this.pet?.p !== p) {
+      this.petEnd();
+      this.pet = { p, y: e.clientY, dir: 0, travel: 0, strokes: 0, lastStroke: 0 };
+    }
+    const pet = this.pet;
+    const dy = e.clientY - pet.y;
+    pet.y = e.clientY;
+    if (!dy) return;
+    if (Math.sign(dy) === pet.dir) {
+      pet.travel += Math.abs(dy);
+      return;
+    }
+    const stroked = pet.travel >= PET_STROKE_PX;
+    pet.dir = Math.sign(dy);
+    pet.travel = Math.abs(dy);
+    if (!stroked) return;
+    const now = performance.now();
+    if (now - pet.lastStroke > PET_GAP_MS) pet.strokes = 0;
+    pet.strokes++;
+    pet.lastStroke = now;
+    if (pet.strokes < PET_STROKES) return;
+    if (!pet.purring) this.purr(pet);
+    clearTimeout(pet.timer);
+    pet.timer = setTimeout(() => this.petEnd(), PET_GAP_MS + 200);
+  }
+
+  purr(pet) {
+    const { p } = pet;
+    const size = p.cells.length;
+    pet.purring = true;
+    startPurr({ rate: 30 - size * 1.5, tone: 400 - size * 25 });
+    if (!p.at) renderPiece(p.svg, p, 'happy');
+    p.svg.classList.add('purring');
+    const face = Math.max(0, p.decor.indexOf('face'));
+    const love = () => {
+      const r = p.svg.getBoundingClientRect();
+      const [c, row] = p.cells[face];
+      heart(r.left + ((c + 0.5) / p.w) * r.width, r.top + (row / p.h) * r.height);
+    };
+    love();
+    pet.hearts = setInterval(love, 550);
+  }
+
+  petEnd() {
+    const pet = this.pet;
+    if (!pet) return;
+    this.pet = null;
+    clearTimeout(pet.timer);
+    if (!pet.purring) return;
+    clearInterval(pet.hearts);
+    stopPurr();
+    const { p } = pet;
+    p.svg.classList.remove('purring');
+    if (!p.at && !p.svg.classList.contains('dragging')) renderPiece(p.svg, p, 'idle');
+  }
+
   // ---- hint, tutorial and win ---------------------------------------------
 
   // Puts one piece where the original cut had it, moving aside anything in the way.
@@ -415,6 +489,7 @@ export class Game {
 
   finish() {
     this.won = true;
+    this.petEnd();
     clearTimeout(this.idleTimer);
     this.onIdle?.(false);
     this.els.board.classList.add('won');
