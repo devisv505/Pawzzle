@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#F4CD98">
+  <meta name="description" content="Pawzzle: fit the jelly cat pieces into the grid until every cell is covered.">
+  <title>Pawzzle</title>
+  <link rel="icon" type="image/webp" href="assets/img/faces/happy-orange.webp">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div id="app">
+    <img class="leaf leaf-top" src="assets/img/decor/leaves-a.webp" alt="">
+    <img class="leaf leaf-left" src="assets/img/decor/leaves-b.webp" alt="">
+    <img class="leaf leaf-right" src="assets/img/decor/leaves-fern.webp" alt="">
+
+    <header class="top">
+      <div class="stat" title="Stars collected">
+        <img src="assets/img/icons/star.webp" alt="Stars">
+        <span id="star-total">0</span>
+      </div>
+      <button class="level-tab" id="btn-level" aria-label="Choose level">
+        <small>Level</small><b id="level-num">1</b>
+      </button>
+      <div class="buttons">
+        <button class="round" id="btn-hint" aria-label="Hint"><img src="assets/img/icons/hint.webp" alt=""></button>
+        <button class="round" id="btn-settings" aria-label="Settings"><img src="assets/img/icons/settings.webp" alt=""></button>
+      </div>
+    </header>
+
+    <div class="progress-row">
+      <span class="whiskers"></span>
+      <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+        <div class="fill" id="progress-fill"></div>
+        <span id="progress-text">0%</span>
+      </div>
+      <span class="whiskers flip"></span>
+    </div>
+    <h2 class="level-name" id="level-name">Meow Meadow</h2>
+
+    <main class="board-wrap" id="board-wrap">
+      <div class="board" id="board">
+        <div class="grid" id="grid">
+          <div class="tiles" id="tiles"></div>
+          <div class="highlights" id="highlights"></div>
+          <div class="pieces" id="pieces"></div>
+        </div>
+      </div>
+    </main>
+
+    <section class="tray" id="tray" aria-label="Pieces"></section>
+  </div>
+
+  <div id="drag-layer"></div>
+  <div id="fx-layer"></div>
+  <img id="hand" src="assets/img/ui/hand.webp" alt="" hidden>
+
+  <div class="overlay title" id="title">
+    <div class="title-inner">
+      <img class="logo" src="assets/img/brand/logo.webp" alt="Pawzzle" data-optional="no-logo">
+      <h1 class="logo-text">Pawzzle</h1>
+      <img class="mascot" src="assets/img/mascot/wave.webp" alt="" data-optional="no-mascot">
+      <div class="cats-row" aria-hidden="true">
+        <img src="assets/img/faces/happy-pink.webp" alt="">
+        <img src="assets/img/faces/happy-orange.webp" alt="">
+        <img src="assets/img/faces/happy-blue.webp" alt="">
+      </div>
+      <p class="title-hint">Fit every cat into the grid!</p>
+      <button class="btn big pulse" id="btn-play"><img src="assets/img/icons/play.webp" alt=""> <span>Play</span></button>
+      <p class="title-level">Level <b id="title-level">1</b></p>
+    </div>
+  </div>
+
+  <div class="overlay" id="win" hidden>
+    <div class="card">
+      <div class="ribbon"><span id="win-title">Purrfect!</span></div>
+      <img class="mascot" src="assets/img/mascot/cheer.webp" alt="" data-optional="no-mascot">
+      <div class="stars" id="win-stars">
+        <img src="assets/img/icons/star-empty.webp" alt=""><img src="assets/img/icons/star-empty.webp" alt=""><img src="assets/img/icons/star-empty.webp" alt="">
+      </div>
+      <p class="card-text" id="win-text">Level 1 complete</p>
+      <div class="actions">
+        <button class="btn secondary" id="btn-replay" aria-label="Play again"><img src="assets/img/icons/restart.webp" alt=""></button>
+        <button class="btn pulse" id="btn-next"><span>Next</span> <img src="assets/img/icons/play.webp" alt=""></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="settings" hidden>
+    <div class="card">
+      <div class="ribbon"><span>Settings</span></div>
+      <button class="round close" data-close aria-label="Close"><img src="assets/img/icons/close.webp" alt=""></button>
+      <img class="mascot" src="assets/img/mascot/sleep.webp" alt="" data-optional="no-mascot">
+      <div class="menu">
+        <button class="btn wide" id="btn-sound"><img id="sound-icon" src="assets/img/icons/sound.webp" alt=""> <span id="sound-label">Sound on</span></button>
+        <button class="btn wide secondary" id="btn-restart"><img src="assets/img/icons/restart.webp" alt=""> <span>Restart level</span></button>
+        <button class="btn wide secondary" id="btn-levels"><img src="assets/img/icons/home.webp" alt=""> <span>All levels</span></button>
+      </div>
+      <p class="card-text small">Tip: tap a piece in the tray to rotate it. While dragging, tap with a second finger, press R or scroll to rotate.</p>
+    </div>
+  </div>
+
+  <div class="overlay" id="levels" hidden>
+    <div class="card">
+      <div class="ribbon"><span>Levels</span></div>
+      <button class="round close" data-close aria-label="Close"><img src="assets/img/icons/close.webp" alt=""></button>
+      <div class="level-grid" id="level-grid"></div>
+    </div>
+  </div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
