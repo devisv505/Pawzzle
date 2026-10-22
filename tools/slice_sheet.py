@@ -11,6 +11,8 @@ need a perfect grid. --fit picks how each item lands in its square sprite:
            thing (colors, expressions) keep their relative size (default)
   item     each item gets its own frame, for unrelated stickers of mixed shapes
   stretch  each item is scaled to fill the square exactly, for board tiles
+  trim     each item keeps its own aspect ratio, longest side = --size but never
+           enlarged, for decorations placed freely (leaves, banners)
 Use --key ff00ff for sheets that came back with a flat magenta background.
 """
 import argparse
@@ -66,9 +68,9 @@ def main():
     p.add_argument("--names", required=True, help="comma-separated, row by row")
     p.add_argument("--out", required=True)
     p.add_argument("--prefix", default="")
-    p.add_argument("--size", type=int, default=256, help="output square size in px")
+    p.add_argument("--size", type=int, default=256, help="output size in px (square, or longest side for trim)")
     p.add_argument("--pad", type=float, default=0.04, help="empty margin, fraction of frame")
-    p.add_argument("--fit", choices=("sheet", "item", "stretch"), default="sheet")
+    p.add_argument("--fit", choices=("sheet", "item", "stretch", "trim"), default="sheet")
     p.add_argument("--frame", type=int, help="fixed frame side in sheet px for --fit sheet; use the "
                    "same value for sheets whose sprites swap (e.g. face expressions) so they share one scale")
     p.add_argument("--key", help="hex background color to remove, e.g. ff00ff")
@@ -100,6 +102,12 @@ def main():
     for name, item in zip(names, items):
         if args.fit == "stretch":
             canvas = item.resize((args.size, args.size), Image.LANCZOS)
+        elif args.fit == "trim":
+            m = int(max(item.size) * args.pad)
+            canvas = Image.new("RGBA", (item.width + 2 * m, item.height + 2 * m), (0, 0, 0, 0))
+            canvas.paste(item, (m, m))
+            scale = min(1, args.size / max(canvas.size))
+            canvas = canvas.resize((round(canvas.width * scale), round(canvas.height * scale)), Image.LANCZOS)
         else:
             side = frame if args.fit == "sheet" else int(max(item.size) * (1 + 2 * args.pad))
             canvas = Image.new("RGBA", (side, side), (0, 0, 0, 0))

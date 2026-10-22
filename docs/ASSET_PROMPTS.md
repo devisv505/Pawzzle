@@ -314,7 +314,7 @@ Background: fully transparent PNG (fallback: solid flat #FF00FF magenta).
 | 06 | `tiles.png` | 1024×1024 | core | ✅ done |
 | 07 | `icons.png` | 1024×1024 | core | ✅ done |
 | 08 | `bg_wood.png` | 1024×1024 | core | ✅ done |
-| 09 | `decor.png` | 1024×1024 | core |  |
+| 09 | `decor.png` | 1024×1024 | core | ✅ done |
 | 10 | `hand.png` | 1024×1024 | core |  |
 | 11 | `faces_worried.png` | 1536×1024 | polish |  |
 | 12 | `mascot.png` | 1024×1024 | polish |  |
