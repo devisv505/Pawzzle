@@ -631,13 +631,6 @@ svg.piece.purring .hit {
   z-index: 2;
 }
 
-.card .mascot {
-  display: block;
-  width: 128px;
-  margin: -6px auto 2px;
-  animation: bob 2.4s ease-in-out infinite;
-}
-
 .card-text {
   margin: 8px 0 16px;
   font-size: 20px;
@@ -736,13 +729,7 @@ svg.piece.purring .hit {
   animation: pop-in 0.6s var(--pop) both;
 }
 
-.title .logo {
-  width: min(340px, 82vw);
-  animation: bob 3s ease-in-out infinite;
-}
-
 .logo-text {
-  display: none;
   margin: 0;
   font-size: 64px;
   font-weight: 700;
@@ -753,23 +740,9 @@ svg.piece.purring .hit {
   animation: bob 3s ease-in-out infinite;
 }
 
-.no-logo .logo-text {
-  display: block;
-}
-
-.title .mascot {
-  width: min(200px, 52vw);
-  animation: sway 3s ease-in-out infinite;
-  transform-origin: 50% 100%;
-}
-
 .cats-row {
-  display: none;
-  gap: 4px;
-}
-
-.no-mascot .cats-row {
   display: flex;
+  gap: 4px;
 }
 
 .cats-row img {
