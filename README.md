@@ -28,14 +28,23 @@ because browsers block JavaScript modules on `file://`.
 
 ## Publish on CrazyGames
 
-1. Run `npm run package`. It writes `dist/pawzzle-crazygames.zip`, with
-   `index.html` at the root and only the files the game loads (about 2.2 MB,
+1. Run `npm run package`. It writes the `dist/crazygames/` folder, with
+   `index.html` at the root and only the files the game loads (about 2.3 MB,
    most of it the music).
-2. In the CrazyGames developer portal, submit an HTML5 game and upload the zip.
+2. In the CrazyGames developer portal, submit an HTML5 game. Open
+   `dist/crazygames/`, select everything inside it (`index.html`, `css`, `js`,
+   `assets`) and drag it into the upload zone. It doesn't accept zip files.
 3. In the submission form, turn on saving progress. The SDK's data module is
    off without it.
 4. Test in CrazyGames' QA tool before release. It shows test ads, and saved
    data works there but doesn't sync to player accounts.
+
+Store art: `node tools/make_marketing.mjs` writes the three cover images and
+the two preview videos CrazyGames asks for to `dist/marketing/` (needs Google
+Chrome and ffmpeg; add `covers` to make only the covers). The covers are drawn
+by `tools/marketing/cover.html` with the game's own board and cats. Each video
+opens on its cover, then plays level 14 in the real game at normal speed,
+about 18 seconds, with no sound.
 
 How the integration works:
 
