@@ -1,6 +1,6 @@
 // One level of play: the board, the tray, and dragging pieces between them.
 import { generateLevel } from './level.js';
-import { createPieceSVG, renderPiece, rotateCells, extent } from './piece.js';
+import { createPieceSVG, renderPiece, rotateCells, extent, PAD, U } from './piece.js';
 import { sfx, startPurr, stopPurr } from './audio.js';
 import { burst, sparkles, confetti, heart, reducedMotion } from './fx.js';
 
@@ -8,6 +8,7 @@ const key = (c, r) => `${c},${r}`;
 const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
 const HAND_TIP = [0.16, 0.07]; // fingertip position within hand.webp
 const IDLE_NUDGE_MS = 25000;
+const PAD_CELLS = PAD / U; // margin around a piece's cells inside its SVG
 // Stroking a cat: this much vertical travel is one stroke, and this many
 // strokes with no long pause between them start the purr.
 const PET_STROKE_PX = 12;
@@ -108,12 +109,18 @@ export class Game {
     if (this.handOn) this.showHand();
   }
 
+  // Checks the slots' layout boxes, not scrollHeight (piece margins may overhang a
+  // slot harmlessly) and not their on-screen rects (the slide-in animation moves them).
   fitTray() {
     const tray = this.els.tray;
+    const bottom = tray.clientHeight - 10;
     for (let s = 0.62; s >= 0.24; s -= 0.02) {
       this.trayScale = s;
       this.pieces.forEach((p) => this.size(p));
-      if (tray.scrollHeight <= tray.clientHeight + 1 && tray.scrollWidth <= tray.clientWidth + 1) break;
+      const fits = this.pieces.every(
+        ({ slot }) => slot.offsetTop + slot.offsetHeight <= bottom && slot.offsetLeft + slot.offsetWidth <= tray.clientWidth
+      );
+      if (fits) break;
     }
   }
 
@@ -125,11 +132,14 @@ export class Game {
     p.h = h;
     const side = Math.max(base.w, base.h) * this.cell * this.trayScale + 14;
     p.slot.style.width = p.slot.style.height = `${side}px`;
-    const s = p.at || p.svg.classList.contains('dragging') ? 1 : this.trayScale;
-    p.svg.style.width = `${w * this.cell * s}px`;
-    p.svg.style.height = `${h * this.cell * s}px`;
-    p.svg.style.left = p.at ? `${p.at.c * this.cell}px` : '';
-    p.svg.style.top = p.at ? `${p.at.r * this.cell}px` : '';
+    const inTray = !p.at && !p.svg.classList.contains('dragging');
+    const k = this.cell * (inTray ? this.trayScale : 1);
+    p.svg.style.width = `${(w + 2 * PAD_CELLS) * k}px`;
+    p.svg.style.height = `${(h + 2 * PAD_CELLS) * k}px`;
+    // In the tray a negative margin keeps the slot sized to the cells alone.
+    p.svg.style.margin = inTray ? `${-PAD_CELLS * k}px` : '';
+    p.svg.style.left = p.at ? `${(p.at.c - PAD_CELLS) * this.cell}px` : '';
+    p.svg.style.top = p.at ? `${(p.at.r - PAD_CELLS) * this.cell}px` : '';
   }
 
   // ---- pointer handling -------------------------------------------------
@@ -192,9 +202,12 @@ export class Game {
     const d = this.drag;
     const { p } = d;
     const cell = this.cell;
-    const left = d.x - d.fx * p.w * cell;
-    const top = d.y - d.fy * p.h * cell - d.lift;
-    p.svg.style.transform = `translate(${left}px,${top}px) rotate(${d.tilt.toFixed(2)}deg)`;
+    // fx/fy are fractions of the whole SVG box, margin included.
+    const boxLeft = d.x - d.fx * (p.w + 2 * PAD_CELLS) * cell;
+    const boxTop = d.y - d.fy * (p.h + 2 * PAD_CELLS) * cell - d.lift;
+    p.svg.style.transform = `translate(${boxLeft}px,${boxTop}px) rotate(${d.tilt.toFixed(2)}deg)`;
+    const left = boxLeft + PAD_CELLS * cell;
+    const top = boxTop + PAD_CELLS * cell;
     const g = this.els.grid.getBoundingClientRect();
     const c = Math.round((left - g.left) / cell);
     const r = Math.round((top - g.top) / cell);
@@ -257,8 +270,10 @@ export class Game {
     this.size(p);
     sfx.rotate();
     if (!reducedMotion) {
-      p.svg.querySelector('.jelly').animate(
-        [{ transform: 'rotate(-90deg) scale(.85)' }, { transform: 'rotate(10deg) scale(1.05)', offset: 0.7 }, { transform: 'none' }],
+      // Spin the whole SVG, not its contents, so the turn never paints outside the element.
+      const o = { transformOrigin: '50% 50%' };
+      p.svg.animate(
+        [{ transform: 'rotate(-90deg) scale(.85)', ...o }, { transform: 'rotate(10deg) scale(1.05)', offset: 0.7, ...o }, { transform: 'none', ...o }],
         { duration: 300, easing: 'ease-out' }
       );
     }
@@ -330,7 +345,7 @@ export class Game {
     const o = { transformOrigin: '50% 100%' };
     p.svg.querySelector('.jelly').animate(
       [
-        { transform: 'scale(1.14,.84)', ...o },
+        { transform: 'scale(1.1,.86)', ...o },
         { transform: 'scale(.94,1.06)', offset: 0.45, ...o },
         { transform: 'scale(1.03,.98)', offset: 0.75, ...o },
         { transform: 'none', ...o },
@@ -407,8 +422,9 @@ export class Game {
     const face = Math.max(0, p.decor.indexOf('face'));
     const love = () => {
       const r = p.svg.getBoundingClientRect();
+      const k = r.width / (p.w + 2 * PAD_CELLS);
       const [c, row] = p.cells[face];
-      heart(r.left + ((c + 0.5) / p.w) * r.width, r.top + (row / p.h) * r.height);
+      heart(r.left + (PAD_CELLS + c + 0.5) * k, r.top + (PAD_CELLS + row) * k);
     };
     love();
     pet.hearts = setInterval(love, 550);
@@ -502,7 +518,7 @@ export class Game {
           [
             { transform: 'none', ...o },
             { transform: 'translateY(-18px) scale(1.05,.95)', offset: 0.35, ...o },
-            { transform: 'scale(1.1,.9)', offset: 0.7, ...o },
+            { transform: 'scale(1.08,.9)', offset: 0.7, ...o },
             { transform: 'none', ...o },
           ],
           { duration: 520, delay: 300 + i * 80, easing: 'ease-out' }

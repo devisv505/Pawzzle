@@ -2,6 +2,11 @@
 // face, tail and stamp decorations. Coordinates are in units of U per cell.
 
 export const U = 100;
+// Empty margin around the cells, in the same units. Lips, whiskers, squash and
+// the drag lift all poke past the cells; keeping them inside the SVG's own box
+// matters because Safari leaves smeared trails where a moving element paints
+// outside its box.
+export const PAD = 32;
 const NS = 'http://www.w3.org/2000/svg';
 const IMG = 'assets/img';
 
@@ -173,10 +178,10 @@ export function renderPiece(svg, piece, mood = 'idle') {
     }
   });
 
-  svg.setAttribute('viewBox', `0 0 ${w * U} ${h * U}`);
+  svg.setAttribute('viewBox', `${-PAD} ${-PAD} ${w * U + 2 * PAD} ${h * U + 2 * PAD}`);
   svg.dataset.w = w;
   svg.dataset.h = h;
-  svg.innerHTML = `<g class="jelly">
+  svg.innerHTML = `<path class="shadow" d="${d}" transform="translate(0 16)"/><g class="jelly">
     <path class="hit lip" d="${d}" transform="translate(0 7)" fill="${pal.lip}" stroke="${pal.line}" stroke-width="5" stroke-linejoin="round"/>
     <path class="hit body" d="${d}" fill="url(#jelly-${color})" stroke="${pal.line}" stroke-width="5" stroke-linejoin="round"/>
     <path d="${bodyPath(cells, 12, 16, 4)}" fill="none" stroke="url(#jelly-rim)" stroke-width="6"/>

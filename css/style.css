@@ -377,8 +377,21 @@ svg.piece {
   transition: transform 0.15s;
 }
 
+/* No CSS filter on moving pieces: Safari leaves trails behind filtered,
+   transformed elements. The shadow is drawn inside the SVG instead, and the
+   dragged piece gets its own compositing layer. */
 svg.piece.dragging {
-  filter: drop-shadow(0 14px 10px rgba(115, 49, 19, 0.35));
+  will-change: transform;
+}
+
+.piece .shadow {
+  fill: #733113;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.dragging .shadow {
+  opacity: 0.2;
 }
 
 .dragging .jelly {
@@ -459,6 +472,7 @@ svg.piece.purring .hit {
   z-index: 65;
   pointer-events: none;
   filter: drop-shadow(0 6px 6px rgba(115, 49, 19, 0.3));
+  will-change: transform;
 }
 
 #hand[hidden] {
@@ -647,6 +661,7 @@ svg.piece.purring .hit {
 .stars img {
   width: 64px;
   filter: drop-shadow(0 3px 0 rgba(115, 49, 19, 0.2));
+  will-change: transform;
 }
 
 .stars img:nth-child(2) {
@@ -963,7 +978,7 @@ svg.piece.purring .hit {
   }
   100% {
     opacity: 0;
-    transform: translate(12px, -22px) scale(1);
+    transform: translate(8px, -14px) scale(1);
   }
 }
 
