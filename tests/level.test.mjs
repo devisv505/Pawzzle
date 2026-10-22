@@ -22,6 +22,14 @@ test('solution covers every playable cell exactly once', () => {
   }
 });
 
+test('every cell is playable or holds an obstacle, none left empty', () => {
+  for (const n of LEVELS) {
+    for (const t of generateLevel(n).grid.flat()) {
+      assert.ok(['play', 'box', 'plant'].includes(t), `level ${n}: ${t} cell`);
+    }
+  }
+});
+
 test('pieces are connected, sized to the level and normalised', () => {
   for (const n of LEVELS) {
     const cfg = levelConfig(n);

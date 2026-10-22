@@ -29,13 +29,13 @@ export function mulberry32(seed) {
 // Difficulty curve. Pieces stay at 6 cells or fewer, which also rules out
 // pieces with holes or corner-only joins (those need 7+ cells).
 export function levelConfig(n) {
-  if (n <= 1) return { cols: 4, rows: 4, minSize: 2, maxSize: 4, obstacles: 0, voids: 0, rotate: false };
-  if (n <= 2) return { cols: 4, rows: 4, minSize: 3, maxSize: 4, obstacles: 0, voids: 0, rotate: false };
-  if (n <= 3) return { cols: 5, rows: 5, minSize: 3, maxSize: 5, obstacles: 0, voids: 0, rotate: true };
-  if (n <= 6) return { cols: 5, rows: 5, minSize: 3, maxSize: 5, obstacles: 1, voids: 0, rotate: true };
-  if (n <= 12) return { cols: 6, rows: 6, minSize: 3, maxSize: 5, obstacles: 2, voids: 0, rotate: true };
-  if (n <= 20) return { cols: 6, rows: 6, minSize: 4, maxSize: 5, obstacles: 2, voids: 2, rotate: true };
-  return { cols: 6, rows: 6, minSize: 4, maxSize: 6, obstacles: 3, voids: 3, rotate: true };
+  if (n <= 1) return { cols: 4, rows: 4, minSize: 2, maxSize: 4, obstacles: 0, edges: 0, rotate: false };
+  if (n <= 2) return { cols: 4, rows: 4, minSize: 3, maxSize: 4, obstacles: 0, edges: 0, rotate: false };
+  if (n <= 3) return { cols: 5, rows: 5, minSize: 3, maxSize: 5, obstacles: 0, edges: 0, rotate: true };
+  if (n <= 6) return { cols: 5, rows: 5, minSize: 3, maxSize: 5, obstacles: 1, edges: 0, rotate: true };
+  if (n <= 12) return { cols: 6, rows: 6, minSize: 3, maxSize: 5, obstacles: 2, edges: 0, rotate: true };
+  if (n <= 20) return { cols: 6, rows: 6, minSize: 4, maxSize: 5, obstacles: 2, edges: 2, rotate: true };
+  return { cols: 6, rows: 6, minSize: 4, maxSize: 6, obstacles: 3, edges: 3, rotate: true };
 }
 
 const key = (c, r) => `${c},${r}`;
@@ -85,8 +85,9 @@ function isConnected(cells) {
   return seen.size === cells.length;
 }
 
-// Grid of 'play' | 'box' | 'plant' | 'void'. Voids carve the outline from the
-// edges; obstacles sit inside. The playable area must stay in one piece.
+// Grid of 'play' | 'box' | 'plant'. Edge obstacles carve the outline from the
+// border, the others sit inside, and no cell is ever left empty. The playable
+// area must stay in one piece.
 function makeGrid(cfg, rnd) {
   for (let attempt = 0; attempt < 100; attempt++) {
     const grid = Array.from({ length: cfg.rows }, () => Array(cfg.cols).fill('play'));
@@ -98,7 +99,8 @@ function makeGrid(cfg, rnd) {
         (edge ? border : inner).push([c, r]);
       }
     }
-    shuffle(border, rnd).slice(0, cfg.voids).forEach(([c, r]) => (grid[r][c] = 'void'));
+    // Box or plant by position, not by rnd(), so each level keeps its puzzle.
+    shuffle(border, rnd).slice(0, cfg.edges).forEach(([c, r]) => (grid[r][c] = (c + r) % 2 ? 'box' : 'plant'));
     shuffle(inner, rnd).slice(0, cfg.obstacles).forEach(([c, r]) => (grid[r][c] = rnd() < 0.5 ? 'box' : 'plant'));
     const play = [];
     grid.forEach((row, r) => row.forEach((t, c) => t === 'play' && play.push([c, r])));

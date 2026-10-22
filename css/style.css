@@ -322,10 +322,6 @@ button {
   background-image: url(../assets/img/tiles/tile-plant.webp);
 }
 
-.tile-void {
-  visibility: hidden;
-}
-
 .hl {
   margin: 4px;
   border-radius: calc(var(--cell) * 0.24);
