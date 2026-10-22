@@ -8,6 +8,8 @@ export function setSoundEnabled(on) {
   if (!on) stopPurr();
 }
 
+export const isSoundEnabled = () => enabled;
+
 // Browsers only allow audio after a user gesture; call this from one.
 export function unlockAudio() {
   try {
