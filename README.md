@@ -39,12 +39,3 @@ because browsers block JavaScript modules on `file://`.
 | `assets/raw/` | Approved AI-generated sheets |
 | `assets/img/` | Sprites cut from those sheets (`tools/build_sprites.sh`) |
 | `docs/ASSET_PROMPTS.md` | Prompts used to generate the art |
-| `prototype_1/` | Hueline: a separate colour-mixing automation prototype |
-
-## Prototypes
-
-`prototype_1/` is **Hueline**, a standalone experiment in the same repo:
-draw conveyor belts from ore deposits into mixers, combine two primary colours
-into a third, and keep the shops supplied without choking a machine. Serve the
-repo and open `/prototype_1/`. It has its own
-[README](prototype_1/README.md) and its own tests, both run by `npm test`.
