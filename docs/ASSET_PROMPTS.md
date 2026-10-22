@@ -25,9 +25,13 @@ Prompts for every image the browser version of Pawzzle needs. The target look is
 - **Midjourney:** weak at exact grids. Generate one item per prompt instead: copy the
   sheet prompt and keep only one item.
 
-**Planned gameplay:** a block puzzle. You drag the 3 pieces from the bottom tray onto
-the 6×6 board. Full rows or columns clear and add score, and score fills the level bar.
-Tan "goal" tiles carry counters. Pieces are cat-shaped jelly polyominoes.
+**Gameplay:** a tiling puzzle. Each level is a grid, sometimes an irregular shape or one
+with fixed obstacle cells. The tray holds cat-shaped jelly pieces of different shapes.
+You drag them into the grid and tap a piece to rotate it. The level is won when every
+cell is covered. The progress bar shows the percentage covered.
+
+Levels are made by cutting the grid into random cat pieces, so every level is solvable,
+and the hint button can show where one piece belongs.
 
 ---
 
@@ -39,9 +43,9 @@ These parts are drawn with SVG/CSS so they stay sharp and work for **any** piece
 |---|---|
 | Jelly piece bodies (any shape, 6 colors, gloss, 3D lip, outline) | SVG path built from the piece's cells |
 | Stripes and paw-print stamps on pieces, whisker lines next to the progress bar | SVG, tinted per color |
-| All text and numbers (score, level, %, level name, numbers on pieces and tiles) | Web font **Fredoka** (Google Fonts), brown `#733113` |
+| All text and numbers (level, moves, % covered, level name) | Web font **Fredoka** (Google Fonts), brown `#733113` |
 | Board frame and glow, bottom tray shelf, round buttons, level tab, progress bar, popups | CSS |
-| Drop preview, invalid flash, line-clear and score animations | CSS / JS |
+| Snap preview, "doesn't fit" shake, hint ghost outline, rotate and win animations | CSS / JS |
 
 A piece is a code-drawn jelly body with image stickers placed on its cells:
 
@@ -67,7 +71,7 @@ Use these values so the stickers match the code-drawn blocks.
 | Green | `#7ECD6E` | `#3F9A4E` | |
 | Lavender (new 6th color) | `#B79AF0` | `#7E5BC9` | |
 | Board cell | `#F8E9CD` | paw watermark `#ECCDA6` | |
-| Goal tile | `#F2D5A6` | `#D8B185` | |
+| Tan accent | `#F2D5A6` | `#D8B185` | empty stars |
 | Wood background | `#F4CD98` → `#EEB37B` | | |
 | Text / facial features | `#733113` / `#4A2414` | | |
 
@@ -94,7 +98,7 @@ Background: fully transparent PNG. If transparency is impossible, use a solid fl
 ```
 
 ### 02 · `faces_happy.png`: cat heads, joyful (1536×1024)
-Shown when a piece is placed or a line clears.
+Shown when a piece snaps into place, and on every cat when the grid is full.
 
 ```
 Image 1 is the art-style reference. Image 2 is the approved style: match its head shape, colors, line weight, size and position EXACTLY. Only the expression changes.
@@ -135,8 +139,9 @@ No text, numbers, letters, watermark. No cast shadow.
 Background: fully transparent PNG (fallback: solid flat #FF00FF magenta).
 ```
 
-### 05 · `specials.png`: paw and special items (1024×1024)
-Includes the pink 1-cell paw piece from the tray, plus three special items.
+### 05 · `specials.png`: paw and piece stickers (1024×1024)
+The paw is for 1-cell pieces, like the pink paw block in the tray. The other three
+stickers add variety to the body cells of long pieces.
 
 ```
 Use the attached image as the ART-STYLE reference only (see the pink paw block in the bottom-right tray).
@@ -144,25 +149,27 @@ Style: cute casual mobile puzzle game, glossy jelly/candy look, chunky rounded s
 
 Create a clean sprite sheet: 2 columns × 2 rows, each item centered in its own equal-size invisible cell with at least 12% empty margin; items never touch; no grid lines, no labels.
 1. A raised cat paw seen palm-forward: fluffy cream-white #FFF4E6 fur, four pink #F58FA8 toe beans and one big pink heart-shaped pad.
-2. A round ball of pink-and-orange yarn with a loose curly thread end (power-up: bomb).
-3. A cute blue-and-silver fish treat with a happy face (bonus collectible).
-4. A shiny golden cat-collar bell on a short red ribbon (power-up: wildcard).
+2. A round ball of pink-and-orange yarn with a loose curly thread end.
+3. A cute blue-and-silver fish treat with a happy face.
+4. A shiny golden cat-collar bell on a short red ribbon.
 
 No text, numbers, letters, watermark. No cast shadow.
 Background: fully transparent PNG (fallback: solid flat #FF00FF magenta).
 ```
 
 ### 06 · `tiles.png`: board tiles (1024×1024)
+Two empty cells to cover, and two obstacles that sit in fixed cells and change the
+shape the pieces must fill.
 
 ```
-Use the attached image as the ART-STYLE reference only (see the empty board cells and the tan tiles with small numbers).
+Use the attached image as the ART-STYLE reference only (see the empty cream board cells).
 Style: cute casual mobile puzzle game, soft and clean, flat top-down view.
 
 Create a clean sprite sheet: 2 columns × 2 rows, each item centered in its own equal-size invisible cell; each tile is a perfect square with rounded corners filling about 85% of its cell; tiles never touch; no grid lines, no labels.
 1. Empty board cell: cream #F8E9CD rounded square, very subtle inner shadow along the top edge, otherwise plain.
 2. The same cream cell with a faint, soft paw-print watermark in #ECCDA6 in the center.
-3. Goal tile: warm tan #F2D5A6 rounded square, slightly raised with a soft darker #D8B185 edge, a tiny cute cat face in the bottom-right corner and a tiny paw print in the top-right corner. Leave the center and top-left EMPTY (numbers are added later by code).
-4. Obstacle tile: the same cream cell with a cute closed cardboard box (classic "cat box") filling it, seen from the front.
+3. Obstacle tile: the same cream cell with a cute closed cardboard box (classic "cat box") filling it, seen from the front.
+4. Obstacle tile: the same cream cell with a small terracotta flower pot holding a round green plant, filling it, seen from the front.
 
 No text, numbers, letters, watermark.
 Background around the tiles: fully transparent PNG (fallback: solid flat #FF00FF magenta).
@@ -179,7 +186,7 @@ Create a clean sprite sheet: 4 columns × 4 rows, each icon centered in its own 
 Row 1: paw print (coral red #F2645A, for lives), gear (settings), pause, play.
 Row 2: restart (circular arrow), undo (curved left arrow), home (house with cat ears on the roof), hint (light bulb with little cat ears, yellow #FDD942).
 Row 3: speaker with sound waves, speaker muted with an X, music note, close (X).
-Row 4: filled star (gold #FFC83D), empty star (outline only, tan #D8B185), heart (coral red #F2645A), crown (gold #FFC83D).
+Row 4: filled star (gold #FFC83D), empty star (outline only, tan #D8B185), heart (coral red #F2645A), rotate (two curved arrows chasing each other in a circle).
 
 No text, numbers, letters, watermark. No cast shadow.
 Background: fully transparent PNG (fallback: solid flat #FF00FF magenta).
@@ -225,7 +232,7 @@ Background: fully transparent PNG (fallback: solid flat #FF00FF magenta).
 ## 4. Prompts: polish set (optional, nice to have)
 
 ### 11 · `faces_worried.png`: cat heads, worried (1536×1024)
-For an invalid drop or "no moves left".
+Shown when you drop a piece somewhere it doesn't fit.
 
 ```
 Image 1 is the art-style reference. Image 2 is the approved style: match its head shape, colors, line weight, size and position EXACTLY. Only the expression changes.
@@ -239,14 +246,14 @@ Background: fully transparent PNG (fallback: solid flat #FF00FF magenta).
 ```
 
 ### 12 · `mascot.png`: mascot poses (1024×1024)
-For the menu, win, lose, and pause screens.
+For the menu, win, hint, and pause screens.
 
 ```
 Image 1 is the art-style reference. Image 2 is the approved cat style: the mascot is the ORANGE TABBY cat from image 2 (same face, colors and line weight), drawn full-body as a chubby chibi cat.
 
 Create a clean sprite sheet: 2 columns × 2 rows, each pose centered in its own equal-size invisible cell with at least 10% empty margin; poses never touch; no grid lines, no labels. Same character and size in all four:
 1. Cheering: standing on hind legs, both front paws raised high, joyful closed-eye smile (level complete).
-2. Sad: sitting, ears down, teary eyes, small frown (out of moves).
+2. Thinking: sitting, one paw on its chin, eyes looking up, a curious little smile (hint).
 3. Waving: sitting and waving one paw, friendly smile (main menu).
 4. Sleeping: curled up asleep on top of a small orange jelly cube (pause).
 
