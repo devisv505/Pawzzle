@@ -3,7 +3,7 @@
 
     python3 tools/slice_sheet.py assets/raw/faces_idle.webp --grid 3x2 \
         --names orange,blue,yellow,pink,green,lavender \
-        --out assets/img/faces --prefix idle- --size 256 --frame 510
+        --out assets/img/faces --prefix idle- --frame 510
 
 Items are found by scanning for empty gaps between them, so the sheet does not
 need a perfect grid. --fit picks how each item lands in its square sprite:
@@ -74,6 +74,7 @@ def main():
     p.add_argument("--frame", type=int, help="fixed frame side in sheet px for --fit sheet; use the "
                    "same value for sheets whose sprites swap (e.g. face expressions) so they share one scale")
     p.add_argument("--key", help="hex background color to remove, e.g. ff00ff")
+    p.add_argument("--format", choices=("webp", "png"), default="webp")
     args = p.parse_args()
 
     cols, rows = (int(n) for n in args.grid.lower().split("x"))
@@ -113,8 +114,11 @@ def main():
             canvas = Image.new("RGBA", (side, side), (0, 0, 0, 0))
             canvas.paste(item, ((side - item.width) // 2, (side - item.height) // 2))
             canvas = canvas.resize((args.size, args.size), Image.LANCZOS)
-        path = os.path.join(args.out, f"{args.prefix}{name}.png")
-        canvas.save(path, optimize=True)
+        path = os.path.join(args.out, f"{args.prefix}{name}.{args.format}")
+        if args.format == "webp":
+            canvas.save(path, quality=90, method=6, exact=False)
+        else:
+            canvas.save(path, optimize=True)
         print(f"{path}  ({item.width}x{item.height} in sheet)")
 
 
