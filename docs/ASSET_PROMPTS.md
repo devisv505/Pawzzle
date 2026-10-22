@@ -304,8 +304,8 @@ Background: fully transparent PNG (fallback: solid flat #FF00FF magenta).
 | # | File | Size | Set | Status |
 |---|---|---|---|---|
 | 01 | `faces_idle.png` | 1536×1024 | core | ✅ done |
-| 02 | `faces_happy.png` | 1536×1024 | core |  |
-| 03 | `cats_sleeping.png` | 1536×1024 | core |  |
+| 02 | `faces_happy.png` | 1536×1024 | core | ✅ done |
+| 03 | `cats_sleeping.png` | 1536×1024 | core | ✅ done |
 | 04 | `tails.png` | 1536×1024 | core |  |
 | 05 | `specials.png` | 1024×1024 | core |  |
 | 06 | `tiles.png` | 1024×1024 | core |  |

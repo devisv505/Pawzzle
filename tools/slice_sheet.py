@@ -3,7 +3,7 @@
 
     python3 tools/slice_sheet.py assets/raw/faces_idle.webp --grid 3x2 \
         --names orange,blue,yellow,pink,green,lavender \
-        --out assets/img/faces --prefix idle- --size 256
+        --out assets/img/faces --prefix idle- --size 256 --frame 510
 
 Items are found by scanning for empty gaps between them, so the sheet does not
 need a perfect grid. Every sprite gets the same square frame (sized to the
@@ -65,6 +65,8 @@ def main():
     p.add_argument("--prefix", default="")
     p.add_argument("--size", type=int, default=256, help="output square size in px")
     p.add_argument("--pad", type=float, default=0.04, help="empty margin, fraction of frame")
+    p.add_argument("--frame", type=int, help="fixed frame side in sheet px; use the same value "
+                   "for sheets whose sprites swap (e.g. face expressions) so they share one scale")
     p.add_argument("--key", help="hex background color to remove, e.g. ff00ff")
     args = p.parse_args()
 
@@ -86,7 +88,10 @@ def main():
             p.error(f"empty cell at {box}")
         items.append(cell.crop(bbox))
 
-    frame = int(max(max(i.size) for i in items) * (1 + 2 * args.pad))
+    largest = max(max(i.size) for i in items)
+    frame = args.frame or int(largest * (1 + 2 * args.pad))
+    if frame < largest:
+        p.error(f"--frame {frame} is smaller than the largest item ({largest}px)")
     os.makedirs(args.out, exist_ok=True)
     for name, item in zip(names, items):
         canvas = Image.new("RGBA", (frame, frame), (0, 0, 0, 0))
