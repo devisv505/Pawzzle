@@ -389,6 +389,14 @@ svg.piece.dragging {
   cursor: grabbing;
 }
 
+svg.piece.purring .jelly {
+  animation: purr 0.08s linear infinite;
+}
+
+svg.piece.purring .hit {
+  cursor: pointer;
+}
+
 .piece .sleeper {
   transform-box: fill-box;
   transform-origin: 50% 100%;
@@ -935,6 +943,13 @@ svg.piece.dragging {
 @keyframes breathe {
   50% {
     transform: scale(1.03, 0.96);
+  }
+}
+
+/* Units here are the piece's SVG units (100 per cell), so 2.5px is 2.5% of a cell. */
+@keyframes purr {
+  50% {
+    transform: translate(2.5px, -2px) rotate(0.8deg);
   }
 }
 

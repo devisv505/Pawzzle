@@ -2,7 +2,8 @@
 
 A cozy browser puzzle: drag the jelly cat pieces into the grid until every cell
 is covered. Tap a piece in the tray to rotate it. While dragging, rotate it with
-a second finger, the R key or the mouse wheel.
+a second finger, the R key or the mouse wheel. Stroke a cat up and down with
+the mouse and it purrs.
 
 Plain HTML, CSS and JavaScript modules, with no build step. Every level is made
 by cutting the board into cat pieces, so every level is solvable, and level N

@@ -3,6 +3,7 @@ import { PALETTE } from './piece.js';
 
 export const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const STAR = 'assets/img/icons/star.webp';
+const HEART = 'assets/img/icons/heart.webp';
 
 function layer() {
   return document.getElementById('fx-layer');
@@ -87,4 +88,21 @@ export function confetti(count = 70) {
       { duration: 2200 + Math.random() * 1600, delay: Math.random() * 600, easing: 'cubic-bezier(.3,.2,.6,1)' }
     );
   }
+}
+
+// A little heart floating up from a happy cat.
+export function heart(x, y) {
+  if (reducedMotion) return;
+  const size = 20 + Math.random() * 8;
+  const el = particle('star', x + (Math.random() - 0.5) * 24, y, size, `<img src="${HEART}" alt="">`);
+  const drift = (Math.random() - 0.5) * 40;
+  fly(
+    el,
+    [
+      { transform: 'translate(0,0) scale(.3)', opacity: 0 },
+      { transform: `translate(${drift * 0.3}px,-18px) scale(1)`, opacity: 1, offset: 0.25 },
+      { transform: `translate(${drift}px,-64px) scale(.8) rotate(${drift / 2}deg)`, opacity: 0 },
+    ],
+    { duration: 1100, easing: 'ease-out' }
+  );
 }
