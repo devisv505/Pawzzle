@@ -11,9 +11,10 @@ Prompts for every image the browser version of Pawzzle needs. The target look is
 2. For every cat prompt after `01`, attach **two images**: the mockup, plus your
    approved `faces_idle.png`. Each of those prompts already includes the line
    *"Image 2 is the approved style"*.
-3. Save each result under the exact filename shown and put it in `assets/raw/`
+3. Save each result under the exact filename shown (PNG or WebP) and put it in `assets/raw/`
    (commit it, or upload it in chat). I'll slice the sheets into single sprites,
-   remove the background, and export retina sizes, so you don't need to crop anything.
+   remove the background, and export retina sizes with `tools/slice_sheet.py`, so you
+   don't need to crop anything.
 4. Regenerate a sheet if it has the wrong number of items, if items touch or overlap,
    or if it contains text. Clean separation matters more than small details.
 
@@ -58,18 +59,19 @@ A piece is a code-drawn jelly body with image stickers placed on its cells:
 
 ---
 
-## 2. Palette (sampled from the mockup)
+## 2. Palette
 
-Use these values so the stickers match the code-drawn blocks.
+The six cat colors are sampled from the approved `faces_idle` sheet. The rest are
+sampled from the mockup. Use these values so the stickers match the code-drawn blocks.
 
-| Name | Fill | Dark shade / outline | Note |
+| Name | Fill | Outline | Note |
 |---|---|---|---|
-| Orange | `#FF9A4D` | `#DE7034` | tabby stripes `#E27A35` |
-| Blue | `#76C6F0` | `#3E95D0` | |
-| Yellow | `#FDD942` | `#E8A92A` | |
-| Pink | `#FEA8C0` | `#DC5C7B` | |
-| Green | `#7ECD6E` | `#3F9A4E` | |
-| Lavender (new 6th color) | `#B79AF0` | `#7E5BC9` | |
+| Orange | `#FEA342` | `#9D2300` | tabby stripes `#E27A35` |
+| Blue | `#6FC9FC` | `#0053A0` | |
+| Yellow | `#FEDC3F` | `#A34400` | tabby stripes `#E8A92A` |
+| Pink | `#FDA1B5` | `#BB1540` | |
+| Green | `#98DA72` | `#1F6522` | |
+| Lavender | `#C2A0FB` | `#4B2399` | |
 | Board cell | `#F8E9CD` | paw watermark `#ECCDA6` | |
 | Tan accent | `#F2D5A6` | `#D8B185` | empty stars |
 | Wood background | `#F4CD98` → `#EEB37B` | | |
@@ -89,8 +91,8 @@ Style: cute casual mobile puzzle game, kawaii cats, glossy jelly/candy look, chu
 Create a clean sprite sheet: 3 columns × 2 rows, each item centered in its own equal-size invisible cell with at least 12% empty margin; items never touch or overlap; no grid lines, no borders, no labels.
 
 Six cute cat HEADS (head only, no neck, no body). All six have the identical head shape, size, position and expression; only the fur color changes:
-Row 1: orange tabby #FF9A4D with three darker #E27A35 stripes on the forehead; sky blue #76C6F0; sunny yellow #FDD942 with darker #E8A92A forehead stripes.
-Row 2: pink #FEA8C0; green #7ECD6E; lavender #B79AF0.
+Row 1: orange tabby #FEA342 with three darker #E27A35 stripes on the forehead; sky blue #6FC9FC; sunny yellow #FEDC3F with darker #E8A92A forehead stripes.
+Row 2: pink #FDA1B5; green #98DA72; lavender #C2A0FB.
 Each head: round head slightly wider than tall, two triangular ears with soft pink inner ears, small cream #FFF1DA muzzle patch, small dark-brown oval eyes with one white sparkle, tiny pink nose, small "ω" smiling mouth, soft pink blush cheeks, three thin dark whiskers on each side. Calm, friendly expression. The fur matches the given color exactly so the head blends into a jelly block of the same color; outline in a darker shade of that color.
 
 No text, numbers, letters, watermark or signature. No cast shadow on the background.
@@ -103,7 +105,7 @@ Shown when a piece snaps into place, and on every cat when the grid is full.
 ```
 Image 1 is the art-style reference. Image 2 is the approved style: match its head shape, colors, line weight, size and position EXACTLY. Only the expression changes.
 
-Create a clean sprite sheet: 3 columns × 2 rows, same order as image 2 (row 1: orange tabby #FF9A4D, sky blue #76C6F0, yellow #FDD942; row 2: pink #FEA8C0, green #7ECD6E, lavender #B79AF0). Each item centered in its own equal-size invisible cell with at least 12% empty margin; items never touch; no grid lines, no labels.
+Create a clean sprite sheet: 3 columns × 2 rows, same order as image 2 (row 1: orange tabby #FEA342, sky blue #6FC9FC, yellow #FEDC3F; row 2: pink #FDA1B5, green #98DA72, lavender #C2A0FB). Each item centered in its own equal-size invisible cell with at least 12% empty margin; items never touch; no grid lines, no labels.
 
 Six cat HEADS with a JOYFUL expression: eyes closed as happy upturned arcs (^ ^), wide open smiling mouth with a tiny pink tongue, bigger pink blush, ears perked up. Same muzzle, nose and whiskers as image 2.
 
@@ -117,7 +119,7 @@ The sleeping cat seen on the blue piece. Placed on some body cells, and used for
 ```
 Image 1 is the art-style reference (see the sleeping cat on the blue block). Image 2 is the approved cat style: match its colors, face details and line weight.
 
-Create a clean sprite sheet: 3 columns × 2 rows (row 1: orange tabby #FF9A4D, sky blue #76C6F0, yellow #FDD942; row 2: pink #FEA8C0, green #7ECD6E, lavender #B79AF0). Each item centered in its own equal-size invisible cell with at least 12% empty margin; items never touch; no grid lines, no labels.
+Create a clean sprite sheet: 3 columns × 2 rows (row 1: orange tabby #FEA342, sky blue #6FC9FC, yellow #FEDC3F; row 2: pink #FDA1B5, green #98DA72, lavender #C2A0FB). Each item centered in its own equal-size invisible cell with at least 12% empty margin; items never touch; no grid lines, no labels.
 
 Six cats sleeping curled up into a round loaf/cushion shape, seen from the front-side, eyes closed as gentle downward arcs, peaceful smile, tail wrapped around the body, paws tucked in. The silhouette fits a square and is slightly wider than tall. All six have identical pose and size; only the color changes. Outline in a darker shade of each cat's color.
 
@@ -131,7 +133,7 @@ Shown on the end cell of pieces, like the orange piece in the mockup.
 ```
 Image 1 is the art-style reference (see the curly tail on the orange block at the top). Image 2 is the approved cat style: match its colors and line weight.
 
-Create a clean sprite sheet: 3 columns × 2 rows (row 1: orange tabby #FF9A4D, sky blue #76C6F0, yellow #FDD942; row 2: pink #FEA8C0, green #7ECD6E, lavender #B79AF0). Each item centered in its own equal-size invisible cell with at least 12% empty margin; items never touch; no grid lines, no labels.
+Create a clean sprite sheet: 3 columns × 2 rows (row 1: orange tabby #FEA342, sky blue #6FC9FC, yellow #FEDC3F; row 2: pink #FDA1B5, green #98DA72, lavender #C2A0FB). Each item centered in its own equal-size invisible cell with at least 12% empty margin; items never touch; no grid lines, no labels.
 
 Six cute cartoon cat tails, each rising vertically from the bottom and curling at the top like a question mark, with 3 darker stripe bands. Thick, rounded and glossy. All six have the identical shape and size; only the color changes. Outline in a darker shade of each tail's color.
 
@@ -184,7 +186,7 @@ Style: chunky, rounded, filled cartoon game icons, two-tone with soft shading an
 
 Create a clean sprite sheet: 4 columns × 4 rows, each icon centered in its own equal-size invisible cell with at least 15% empty margin; all icons the same visual size; icons never touch; no grid lines, no button backgrounds, no labels.
 Row 1: paw print (coral red #F2645A, for lives), gear (settings), pause, play.
-Row 2: restart (circular arrow), undo (curved left arrow), home (house with cat ears on the roof), hint (light bulb with little cat ears, yellow #FDD942).
+Row 2: restart (circular arrow), undo (curved left arrow), home (house with cat ears on the roof), hint (light bulb with little cat ears, yellow #FEDC3F).
 Row 3: speaker with sound waves, speaker muted with an X, music note, close (X).
 Row 4: filled star (gold #FFC83D), empty star (outline only, tan #D8B185), heart (coral red #F2645A), rotate (two curved arrows chasing each other in a circle).
 
@@ -211,7 +213,7 @@ Create a clean sprite sheet: 2 columns × 2 rows, each item centered in its own 
 1. A cluster of 3 soft green #8DBF5A leaves fanning toward the upper-left (to tuck into a top-right screen corner).
 2. A cluster of 3 green leaves fanning toward the upper-right (bottom-left corner).
 3. A cluster of 2 leaves and a small fern sprig fanning toward the upper-left (bottom-right corner).
-4. An EMPTY wide ribbon banner, orange #FF9A4D with darker #DE7034 folded ends and a glossy top highlight (a title will be written on it by code).
+4. An EMPTY wide ribbon banner, orange #FEA342 with darker #DE7034 folded ends and a glossy top highlight (a title will be written on it by code).
 
 No text, numbers, letters, watermark. No cast shadow.
 Background: fully transparent PNG (fallback: solid flat #FF00FF magenta).
@@ -237,7 +239,7 @@ Shown when you drop a piece somewhere it doesn't fit.
 ```
 Image 1 is the art-style reference. Image 2 is the approved style: match its head shape, colors, line weight, size and position EXACTLY. Only the expression changes.
 
-Create a clean sprite sheet: 3 columns × 2 rows, same color order as image 2 (row 1: orange tabby #FF9A4D, sky blue #76C6F0, yellow #FDD942; row 2: pink #FEA8C0, green #7ECD6E, lavender #B79AF0). Each item centered in its own equal-size invisible cell with at least 12% empty margin; items never touch; no grid lines, no labels.
+Create a clean sprite sheet: 3 columns × 2 rows, same color order as image 2 (row 1: orange tabby #FEA342, sky blue #6FC9FC, yellow #FEDC3F; row 2: pink #FDA1B5, green #98DA72, lavender #C2A0FB). Each item centered in its own equal-size invisible cell with at least 12% empty margin; items never touch; no grid lines, no labels.
 
 Six cat HEADS with a WORRIED/SURPRISED expression: big round eyes with large sparkles, small open "o" mouth, ears slightly lowered, one small light-blue sweat drop near the forehead.
 
@@ -265,7 +267,7 @@ Background: fully transparent PNG (fallback: solid flat #FF00FF magenta).
 
 ```
 Use the attached image as the ART-STYLE reference only.
-A cute game logo with the single word "Pawzzle", spelled exactly P-a-w-z-z-l-e. Chunky rounded bubbly letters, glossy jelly look with an orange #FF9A4D to yellow #FDD942 vertical gradient, thick dark-brown #733113 outline, white glossy highlight on the top of each letter. Small cat ears on top of the "P", and the dot-like counter of the "a" replaced with a small paw print. Slight playful bounce: letters tilted a little up and down. Centered, filling about 80% of the width.
+A cute game logo with the single word "Pawzzle", spelled exactly P-a-w-z-z-l-e. Chunky rounded bubbly letters, glossy jelly look with an orange #FEA342 to yellow #FEDC3F vertical gradient, thick dark-brown #733113 outline, white glossy highlight on the top of each letter. Small cat ears on top of the "P", and the dot-like counter of the "a" replaced with a small paw print. Slight playful bounce: letters tilted a little up and down. Centered, filling about 80% of the width.
 
 No other text, no watermark, no background scene.
 Background: fully transparent PNG (fallback: solid flat #FF00FF magenta).
@@ -299,22 +301,22 @@ Background: fully transparent PNG (fallback: solid flat #FF00FF magenta).
 
 ## 5. Checklist
 
-| # | File | Size | Set |
-|---|---|---|---|
-| 01 | `faces_idle.png` | 1536×1024 | core |
-| 02 | `faces_happy.png` | 1536×1024 | core |
-| 03 | `cats_sleeping.png` | 1536×1024 | core |
-| 04 | `tails.png` | 1536×1024 | core |
-| 05 | `specials.png` | 1024×1024 | core |
-| 06 | `tiles.png` | 1024×1024 | core |
-| 07 | `icons.png` | 1024×1024 | core |
-| 08 | `bg_wood.png` | 1024×1024 | core |
-| 09 | `decor.png` | 1024×1024 | core |
-| 10 | `hand.png` | 1024×1024 | core |
-| 11 | `faces_worried.png` | 1536×1024 | polish |
-| 12 | `mascot.png` | 1024×1024 | polish |
-| 13 | `logo.png` | 1536×1024 | polish |
-| 14 | `app_icon.png` | 1024×1024 | polish |
-| 15 | `fx.png` | 1024×1024 | polish |
+| # | File | Size | Set | Status |
+|---|---|---|---|---|
+| 01 | `faces_idle.png` | 1536×1024 | core | ✅ done |
+| 02 | `faces_happy.png` | 1536×1024 | core |  |
+| 03 | `cats_sleeping.png` | 1536×1024 | core |  |
+| 04 | `tails.png` | 1536×1024 | core |  |
+| 05 | `specials.png` | 1024×1024 | core |  |
+| 06 | `tiles.png` | 1024×1024 | core |  |
+| 07 | `icons.png` | 1024×1024 | core |  |
+| 08 | `bg_wood.png` | 1024×1024 | core |  |
+| 09 | `decor.png` | 1024×1024 | core |  |
+| 10 | `hand.png` | 1024×1024 | core |  |
+| 11 | `faces_worried.png` | 1536×1024 | polish |  |
+| 12 | `mascot.png` | 1024×1024 | polish |  |
+| 13 | `logo.png` | 1536×1024 | polish |  |
+| 14 | `app_icon.png` | 1024×1024 | polish |  |
+| 15 | `fx.png` | 1024×1024 | polish |  |
 
 Sounds aren't covered here; free SFX can be added later.
