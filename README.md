@@ -29,7 +29,8 @@ because browsers block JavaScript modules on `file://`.
 ## Publish on CrazyGames
 
 1. Run `npm run package`. It writes `dist/pawzzle-crazygames.zip`, with
-   `index.html` at the root and only the files the game loads (about 800 KB).
+   `index.html` at the root and only the files the game loads (about 2.2 MB,
+   most of it the music).
 2. In the CrazyGames developer portal, submit an HTML5 game and upload the zip.
 3. In the submission form, turn on saving progress. The SDK's data module is
    off without it.
@@ -41,28 +42,34 @@ How the integration works:
 - `js/platform.js` is the only file that talks to CrazyGames (SDK v3). Off
   CrazyGames (GitHub Pages, offline, SDK blocked) it falls back to
   `localStorage`, and there are no ads.
-- Progress (levels, stars, sound setting, hint balance) is saved through the
-  SDK's data module, so logged-in players keep it across devices.
+- Progress (levels, stars, sound and music settings, hint balance) is saved
+  through the SDK's data module, so logged-in players keep it across devices.
 - New players get 3 free hints (`FREE_HINTS` in `js/main.js`). After that, a
   hint costs a rewarded video. Off CrazyGames, hints stay free.
 - The game reports gameplay start and stop around popups and ads, sends loading
   events at boot and a "happy time" event when a level is won, and follows the
   site's mute setting.
 
-## Sound effects
+## Sound and music
 
-The sounds are made with the ElevenLabs sound effects API. Put
+The sound effects and the music loop are made with the ElevenLabs API. Put
 `ELEVENLABS_API_KEY=...` in `.env` (it's git-ignored) and install ffmpeg, then:
 
 ```sh
 python3 tools/generate_sounds.py             # generate missing sounds
 python3 tools/generate_sounds.py place win   # generate these again
+python3 tools/generate_sounds.py music       # a new music track
 ```
 
 The prompts and lengths are at the top of the script. Each download is kept in
 `assets/raw/sounds/`, and the trimmed, level-matched copy the game loads goes
-to `assets/sounds/`. Playback volume and pitch for each sound are in
-`js/audio.js`.
+to `assets/sounds/`. Loops (the purr and the music) get their end crossfaded
+into their start so they repeat without a seam. Playback volume and pitch for
+each sound are in `js/audio.js`.
+
+The music streams once the player taps Play, fades out when the tab is hidden,
+and dips while the win jingle plays. Settings has its own Music switch and
+volume slider, separate from Sound.
 
 ## Project layout
 
@@ -73,12 +80,12 @@ to `assets/sounds/`. Playback volume and pitch for each sound are in
 | `js/piece.js` | Draws a jelly piece as SVG, with its cat stickers |
 | `js/game.js` | Board, tray, drag and drop, hints, tutorial, win |
 | `js/main.js` | Title screen, popups, settings, saved progress |
-| `js/audio.js`, `js/fx.js` | Sound effects, particles and confetti |
+| `js/audio.js`, `js/fx.js` | Sound effects, music, particles and confetti |
 | `js/platform.js` | CrazyGames SDK: saves, rewarded videos, gameplay events |
 | `assets/fonts/` | Fredoka font, self-hosted (SIL Open Font License) |
 | `tools/package_crazygames.py` | Builds the CrazyGames upload zip |
-| `tools/generate_sounds.py` | Makes the sound effects with ElevenLabs |
-| `assets/sounds/` | Sound effects the game loads |
+| `tools/generate_sounds.py` | Makes the sound effects and music with ElevenLabs |
+| `assets/sounds/` | Sound effects and music the game loads |
 | `assets/raw/` | Approved AI-generated sheets |
 | `assets/img/` | Sprites cut from those sheets (`tools/build_sprites.sh`) |
 | `assets/raw/sounds/` | ElevenLabs downloads, before trimming |

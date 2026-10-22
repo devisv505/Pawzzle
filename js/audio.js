@@ -1,5 +1,5 @@
-// Sound effects made with ElevenLabs (tools/generate_sounds.py). They load in
-// the background; a sound that isn't ready yet is skipped.
+// Sound effects and music made with ElevenLabs (tools/generate_sounds.py). The
+// effects load in the background; one that isn't ready yet is skipped.
 
 const NAMES = ['click', 'pick', 'rotate', 'place', 'back', 'bad', 'hint', 'star', 'win', 'meow', 'purr'];
 const buffers = {};
@@ -40,6 +40,73 @@ export function unlockAudio() {
   } catch {
     ctx = null;
   }
+  syncMusic();
+}
+
+// ---- music ----
+
+// One long, quiet loop. It streams instead of being decoded up front, which
+// would take tens of MB, and plays through a gain node because iOS ignores a
+// media element's own volume.
+const MUSIC_MAX = 0.5; // gain with the volume slider all the way up
+let music = null;
+let musicOn = true;
+let musicVolume = 0.6;
+const musicLevel = () => MUSIC_MAX * musicVolume;
+
+export function setMusicEnabled(on) {
+  musicOn = on;
+  syncMusic();
+}
+
+export const isMusicEnabled = () => musicOn;
+
+// 0 to 1, from the volume slider in settings.
+export function setMusicVolume(volume) {
+  musicVolume = volume;
+  if (music && musicOn && !document.hidden) fadeMusic(musicLevel(), 0.1);
+}
+
+// Glide the music volume to `to` over `seconds`, from wherever it is now.
+function fadeMusic(to, seconds) {
+  const g = music.gain.gain;
+  const t = ctx.currentTime;
+  g.cancelScheduledValues(t);
+  g.setValueAtTime(g.value, t);
+  g.linearRampToValueAtTime(to, t + seconds);
+}
+
+// Plays while it's switched on and the tab is visible; fades in and out.
+function syncMusic() {
+  if (!ctx || (!music && !musicOn)) return;
+  if (!music) {
+    const el = new Audio(new URL('../assets/sounds/music.mp3', import.meta.url));
+    el.loop = true;
+    const gain = ctx.createGain();
+    gain.gain.value = 0;
+    ctx.createMediaElementSource(el).connect(gain).connect(ctx.destination);
+    music = { el, gain, timer: 0 };
+  }
+  clearTimeout(music.timer);
+  if (musicOn && !document.hidden) {
+    music.el.play().catch(() => {});
+    fadeMusic(musicLevel(), 1.5);
+  } else {
+    fadeMusic(0, 0.3);
+    music.timer = setTimeout(() => music.el.pause(), 350);
+  }
+}
+document.addEventListener('visibilitychange', syncMusic);
+
+// Lowers the music for a moment, so the win jingle stands out.
+function duckMusic(seconds) {
+  if (!music || !musicOn || document.hidden) return;
+  const low = musicLevel() * 0.3;
+  fadeMusic(low, 0.2);
+  const g = music.gain.gain;
+  const t = ctx.currentTime;
+  g.setValueAtTime(low, t + seconds);
+  g.linearRampToValueAtTime(musicLevel(), t + seconds + 1.5);
 }
 
 // `rate` speeds the sound up and raises its pitch with it.
@@ -97,6 +164,7 @@ export const sfx = {
   // Each star rings a step higher.
   star: (i) => play('star', { volume: 0.5, rate: [1, 1.25, 1.5][i] ?? 1 }),
   win: () => {
+    if (enabled) duckMusic(3);
     play('win', { volume: 0.65 });
     play('meow', { volume: 0.5, delay: 0.6 });
   },

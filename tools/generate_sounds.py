@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""Make the game's sound effects with the ElevenLabs sound effects API.
+"""Make the game's sound effects and music with the ElevenLabs API.
 
     python3 tools/generate_sounds.py             # generate missing sounds
     python3 tools/generate_sounds.py place win   # generate these again
 
 Needs ELEVENLABS_API_KEY in the environment or in .env, and ffmpeg. Each
 download is kept in assets/raw/sounds/; the game loads a trimmed, level-matched
-mono copy from assets/sounds/. Every run re-processes all the raw files, which
+copy from assets/sounds/. Every run re-processes all the raw files, which
 costs no credits.
 """
 import json
@@ -20,8 +20,10 @@ import urllib.request
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RAW = os.path.join(ROOT, 'assets', 'raw', 'sounds')
 OUT = os.path.join(ROOT, 'assets', 'sounds')
-API = 'https://api.elevenlabs.io/v1/sound-generation?output_format=mp3_44100_128'
-MODEL = 'eleven_text_to_sound_v3'
+SFX_API = 'https://api.elevenlabs.io/v1/sound-generation?output_format=mp3_44100_128'
+SFX_MODEL = 'eleven_text_to_sound_v3'
+MUSIC_API = 'https://api.elevenlabs.io/v1/music?output_format=mp3_44100_128'
+MUSIC_MODEL = 'music_v1'
 STYLE = 'cute cozy mobile puzzle game sound effect, clean, no music, no voice, no reverb'
 
 # name, seconds, prompt. js/audio.js plays them by name.
@@ -39,9 +41,15 @@ SOUNDS = [
     ('meow', 1.0, 'A happy little kitten meows once, sweet and short, close-up, clean recording, no background noise'),
     ('purr', 5.0, 'Close-up recording of a content house cat purring steadily, warm soft rhythmic rumble, '
                   'clean, no other sounds'),
+    # Background music: quiet enough to play for an hour without wearing thin.
+    ('music', 120, 'Cozy, gentle instrumental background music for a cute cat puzzle game. Soft felt piano and '
+                   'music box over warm marimba and light pizzicato strings, slow relaxed tempo around 75 BPM, '
+                   'calm, warm and sparse. No drums, no vocals, no strong lead melody, no big build-ups or '
+                   'sudden changes. The same mellow mood from start to end, with no intro or ending, so it loops.'),
 ]
-LOOPS = {'purr'}
-LOOP_FADE = 0.4  # seconds of the end crossfaded into the start, so the loop point is seamless
+MUSIC = {'music'}
+# Loops and how many seconds of their end crossfade into their start, so the loop point is seamless.
+LOOPS = {'purr': 0.4, 'music': 4.0}
 TARGET_DB = -20  # average loudness; js/audio.js sets each sound's volume from there
 PEAK_DB = -1
 
@@ -60,12 +68,17 @@ def api_key():
 
 
 def generate(key, name, seconds, prompt):
-    body = {'text': prompt, 'duration_seconds': seconds, 'prompt_influence': 0.5, 'model_id': MODEL}
-    if name in LOOPS:
-        body['loop'] = True
-    req = urllib.request.Request(API, data=json.dumps(body).encode(), headers={'xi-api-key': key, 'Content-Type': 'application/json'})
+    if name in MUSIC:
+        url = MUSIC_API
+        body = {'prompt': prompt, 'music_length_ms': int(seconds * 1000), 'force_instrumental': True, 'model_id': MUSIC_MODEL}
+    else:
+        url = SFX_API
+        body = {'text': prompt, 'duration_seconds': seconds, 'prompt_influence': 0.5, 'model_id': SFX_MODEL}
+        if name in LOOPS:
+            body['loop'] = True
+    req = urllib.request.Request(url, data=json.dumps(body).encode(), headers={'xi-api-key': key, 'Content-Type': 'application/json'})
     try:
-        with urllib.request.urlopen(req, timeout=180) as res:
+        with urllib.request.urlopen(req, timeout=600) as res:
             data = res.read()
     except urllib.error.HTTPError as err:
         sys.exit(f'{name}: HTTP {err.code} {err.read().decode(errors="replace")[:400]}')
@@ -93,32 +106,38 @@ def levels(path):
 
 def process(name):
     raw = os.path.join(RAW, f'{name}.mp3')
+    trimmed = os.path.join(OUT, f'{name}.trim.wav')
     wav = os.path.join(OUT, f'{name}.tmp.wav')
+    channels = '2' if name in MUSIC else '1'
+    # Trim the silence at both ends, measured from the sound's own peak so
+    # quiet downloads keep their tails.
+    _, peak = levels(raw)
+    ffmpeg('-i', raw, '-af',
+           f'silenceremove=start_periods=1:start_threshold={peak - 40:.1f}dB,areverse,'
+           f'silenceremove=start_periods=1:start_threshold={peak - 50:.1f}dB,areverse',
+           '-ac', channels, trimmed)
+    end = duration(trimmed)
     if name in LOOPS:
-        # The last LOOP_FADE seconds fade out over the fading-in start, and the
-        # result is that much shorter, so its end runs straight into its start.
-        cut = duration(raw) - LOOP_FADE
-        ffmpeg('-i', raw, '-filter_complex',
-               f'[0]atrim=start={cut},asetpts=PTS-STARTPTS,afade=t=out:d={LOOP_FADE}:curve=qsin[tail];'
-               f'[0]atrim=end={cut},asetpts=PTS-STARTPTS,afade=t=in:d={LOOP_FADE}:curve=qsin[body];'
+        # The last few seconds fade out over the fading-in start, and the result
+        # is that much shorter, so its end runs straight into its start.
+        x = LOOPS[name]
+        ffmpeg('-i', trimmed, '-filter_complex',
+               f'[0]atrim=start={end - x},asetpts=PTS-STARTPTS,afade=t=out:d={x}:curve=qsin[tail];'
+               f'[0]atrim=end={end - x},asetpts=PTS-STARTPTS,afade=t=in:d={x}:curve=qsin[body];'
                '[body][tail]amix=inputs=2:duration=first:normalize=0',
-               '-ac', '1', wav)
+               wav)
+        os.remove(trimmed)
         fade = ''
     else:
-        # Trim the silence at both ends, measured from the sound's own peak so
-        # quiet downloads keep their tails, then fade the end so it never clicks.
-        _, peak = levels(raw)
-        ffmpeg('-i', raw, '-af',
-               f'silenceremove=start_periods=1:start_threshold={peak - 40:.1f}dB,areverse,'
-               f'silenceremove=start_periods=1:start_threshold={peak - 50:.1f}dB,areverse',
-               '-ac', '1', wav)
-        end = duration(wav)
+        # Fade the end so it never clicks.
+        os.replace(trimmed, wav)
         tail = min(0.3, end / 4)
         fade = f',afade=t=in:d=0.004,afade=t=out:st={end - tail:.3f}:d={tail:.3f}'
     mean, peak = levels(wav)
     gain = min(TARGET_DB - mean, PEAK_DB - peak)
     out = os.path.join(OUT, f'{name}.mp3')
-    ffmpeg('-i', wav, '-af', f'volume={gain:.2f}dB{fade}', '-ar', '44100', '-c:a', 'libmp3lame', '-q:a', '4', out)
+    quality = ['-b:a', '96k'] if name in MUSIC else ['-q:a', '4']
+    ffmpeg('-i', wav, '-af', f'volume={gain:.2f}dB{fade}', '-ar', '44100', '-c:a', 'libmp3lame', *quality, out)
     os.remove(wav)
     print(f'{name}: {duration(out):.2f}s, {os.path.getsize(out) / 1024:.0f} KB, gain {gain:+.1f} dB')
 
@@ -135,7 +154,7 @@ def main():
     for name, seconds, prompt in SOUNDS:
         if name in redo or not os.path.exists(os.path.join(RAW, f'{name}.mp3')):
             key = key or api_key()
-            print(f'{name}: generating {seconds}s')
+            print(f'{name}: generating {seconds}s', flush=True)
             generate(key, name, seconds, prompt)
     for name in names:
         process(name)

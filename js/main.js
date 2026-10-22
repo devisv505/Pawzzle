@@ -2,7 +2,7 @@
 import { Game } from './game.js';
 import { installDefs } from './piece.js';
 import { levelName } from './level.js';
-import { unlockAudio, setSoundEnabled, isSoundEnabled, sfx } from './audio.js';
+import { unlockAudio, setSoundEnabled, isSoundEnabled, setMusicEnabled, isMusicEnabled, setMusicVolume, sfx } from './audio.js';
 import { sparkles, reducedMotion } from './fx.js';
 import { platform } from './platform.js';
 
@@ -19,7 +19,7 @@ await platform.init();
 platform.loading(true);
 
 function readSave() {
-  const fresh = { unlocked: 1, last: 1, best: {}, sound: true, hints: FREE_HINTS };
+  const fresh = { unlocked: 1, last: 1, best: {}, sound: true, music: true, musicVolume: 0.6, hints: FREE_HINTS };
   try {
     return { ...fresh, ...JSON.parse(platform.getItem(SAVE_KEY) || '{}') };
   } catch {
@@ -35,10 +35,12 @@ function writeSave() {
 let current = Math.min(save.last, save.unlocked);
 let adPlaying = false;
 
-// Sound follows the player's setting, the site's mute button, and goes quiet during ads.
+// Sound and music follow the player's settings, the site's mute button, and go quiet during ads.
 function applySound() {
   setSoundEnabled(save.sound && !platform.muted && !adPlaying);
+  setMusicEnabled(save.music && !platform.muted && !adPlaying);
 }
+setMusicVolume(save.musicVolume);
 applySound();
 platform.onSettingsChange(applySound);
 
@@ -241,6 +243,13 @@ async function showLevels() {
 function showSound() {
   $('sound-icon').src = `assets/img/icons/${save.sound ? 'sound' : 'mute'}.webp`;
   $('sound-label').textContent = save.sound ? 'Sound on' : 'Sound off';
+  $('btn-music').classList.toggle('off', !save.music);
+  $('music-label').textContent = save.music ? 'Music on' : 'Music off';
+  const volume = $('music-volume');
+  volume.value = Math.round(save.musicVolume * 100);
+  volume.disabled = !save.music;
+  volume.style.setProperty('--fill', `${volume.value}%`);
+  $('music-volume-row').classList.toggle('off', !save.music);
 }
 
 // ---- buttons ----
@@ -298,6 +307,22 @@ $('btn-sound').addEventListener('click', () => {
   sfx.click();
 });
 
+$('btn-music').addEventListener('click', () => {
+  save.music = !save.music;
+  applySound();
+  writeSave();
+  showSound();
+  sfx.click();
+});
+
+// Volume changes are heard while dragging; the save waits for the drag to end.
+$('music-volume').addEventListener('input', (e) => {
+  save.musicVolume = e.target.value / 100;
+  e.target.style.setProperty('--fill', `${e.target.value}%`);
+  setMusicVolume(save.musicVolume);
+});
+$('music-volume').addEventListener('change', writeSave);
+
 $('btn-restart').addEventListener('click', async () => {
   sfx.click();
   await closePopup('settings');
@@ -323,4 +348,4 @@ platform.loading(false);
 $('btn-play').disabled = false;
 
 // Lets automated browser tests read the level state; inert for players.
-if (new URLSearchParams(location.search).has('test')) window.pawzzle = { game, startLevel, save, platform, isSoundEnabled };
+if (new URLSearchParams(location.search).has('test')) window.pawzzle = { game, startLevel, save, platform, isSoundEnabled, isMusicEnabled };
