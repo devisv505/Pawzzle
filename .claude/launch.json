@@ -4,8 +4,8 @@
     {
       "name": "pawzzle",
       "runtimeExecutable": "npx",
-      "runtimeArgs": ["--yes", "serve", "-l", "8080", "."],
-      "port": 8080
+      "runtimeArgs": ["--yes", "serve", "-l", "8090", "."],
+      "port": 8090
     }
   ]
 }

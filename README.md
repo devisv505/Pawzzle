@@ -26,39 +26,6 @@ because browsers block JavaScript modules on `file://`.
 3. Pick the branch with the game and the **/ (root)** folder, then **Save**.
 4. After a minute the game is live at `https://<user>.github.io/Pawzzle/`.
 
-## Publish on CrazyGames
-
-1. Run `npm run package`. It writes the `dist/crazygames/` folder, with
-   `index.html` at the root and only the files the game loads (about 2.3 MB,
-   most of it the music).
-2. In the CrazyGames developer portal, submit an HTML5 game. Open
-   `dist/crazygames/`, select everything inside it (`index.html`, `css`, `js`,
-   `assets`) and drag it into the upload zone. It doesn't accept zip files.
-3. In the submission form, turn on saving progress. The SDK's data module is
-   off without it.
-4. Test in CrazyGames' QA tool before release. It shows test ads, and saved
-   data works there but doesn't sync to player accounts.
-
-Store art: `node tools/make_marketing.mjs` writes the three cover images and
-the two preview videos CrazyGames asks for to `dist/marketing/` (needs Google
-Chrome and ffmpeg; add `covers` to make only the covers). The covers are drawn
-by `tools/marketing/cover.html` with the game's own board and cats. Each video
-opens on its cover, then plays level 14 in the real game at normal speed,
-about 18 seconds, with no sound.
-
-How the integration works:
-
-- `js/platform.js` is the only file that talks to CrazyGames (SDK v3). Off
-  CrazyGames (GitHub Pages, offline, SDK blocked) it falls back to
-  `localStorage`, and there are no ads.
-- Progress (levels, stars, sound and music settings, hint balance) is saved
-  through the SDK's data module, so logged-in players keep it across devices.
-- New players get 3 free hints (`FREE_HINTS` in `js/main.js`). After that, a
-  hint costs a rewarded video. Off CrazyGames, hints stay free.
-- The game reports gameplay start and stop around popups and ads, sends loading
-  events at boot and a "happy time" event when a level is won, and follows the
-  site's mute setting.
-
 ## Sound and music
 
 The sound effects and the music loop are made with the ElevenLabs API. Put
@@ -88,11 +55,9 @@ volume slider, separate from Sound.
 | `js/level.js` | Seeded level generator and difficulty curve |
 | `js/piece.js` | Draws a jelly piece as SVG, with its cat stickers |
 | `js/game.js` | Board, tray, drag and drop, hints, tutorial, win |
-| `js/main.js` | Title screen, popups, settings, saved progress |
+| `js/main.js` | Title screen, popups, settings, progress saved in `localStorage` |
 | `js/audio.js`, `js/fx.js` | Sound effects, music, particles and confetti |
-| `js/platform.js` | CrazyGames SDK: saves, rewarded videos, gameplay events |
 | `assets/fonts/` | Fredoka font, self-hosted (SIL Open Font License) |
-| `tools/package_crazygames.py` | Builds the CrazyGames upload zip |
 | `tools/generate_sounds.py` | Makes the sound effects and music with ElevenLabs |
 | `assets/sounds/` | Sound effects and music the game loads |
 | `assets/raw/` | Approved AI-generated sheets |

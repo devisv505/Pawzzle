@@ -445,21 +445,12 @@ export class Game {
 
   // ---- hint, tutorial and win ---------------------------------------------
 
-  // The piece a hint would place: one still in the tray, else one sitting in the wrong spot.
-  hintTarget() {
-    if (this.won || this.busy || this.drag) return null;
-    const abs = (cells, at) => cells.map(([a, b]) => key(a + at.c, b + at.r)).sort().join('|');
-    const solved = (p) => p.at && abs(p.cells, p.at) === abs(p.base, p.solution);
-    return this.pieces.find((q) => !q.at) ?? this.pieces.find((q) => !solved(q)) ?? null;
-  }
-
-  canHint() {
-    return this.hintTarget() !== null;
-  }
-
   // Puts one piece where the original cut had it, moving aside anything in the way.
   hint() {
-    const p = this.hintTarget();
+    if (this.won || this.busy || this.drag) return false;
+    const abs = (cells, at) => cells.map(([a, b]) => key(a + at.c, b + at.r)).sort().join('|');
+    const solved = (p) => p.at && abs(p.cells, p.at) === abs(p.base, p.solution);
+    const p = this.pieces.find((q) => !q.at) ?? this.pieces.find((q) => !solved(q));
     if (!p) return false;
     this.hints++;
     this.busy = true;

@@ -4,24 +4,19 @@ import { installDefs } from './piece.js';
 import { levelName } from './level.js';
 import { unlockAudio, setSoundEnabled, isSoundEnabled, setMusicEnabled, isMusicEnabled, setMusicVolume, sfx } from './audio.js';
 import { sparkles, reducedMotion } from './fx.js';
-import { platform } from './platform.js';
 
 const $ = (id) => document.getElementById(id);
 const SAVE_KEY = 'pawzzle.v1';
 const STAR = 'assets/img/icons/star.webp';
 const STAR_EMPTY = 'assets/img/icons/star-empty.webp';
 const WIN_TITLES = ['Purrfect!', 'Paw-some!', 'Meow-velous!', 'Clawsome!', 'Fur-tastic!'];
-// Hints a new player gets for free; after that each hint costs a short video.
-const FREE_HINTS = 3;
 
 installDefs();
-await platform.init();
-platform.loading(true);
 
 function readSave() {
-  const fresh = { unlocked: 1, last: 1, best: {}, sound: true, music: true, musicVolume: 0.6, hints: FREE_HINTS };
+  const fresh = { unlocked: 1, last: 1, best: {}, sound: true, music: true, musicVolume: 0.6 };
   try {
-    return { ...fresh, ...JSON.parse(platform.getItem(SAVE_KEY) || '{}') };
+    return { ...fresh, ...JSON.parse(localStorage.getItem(SAVE_KEY) || '{}') };
   } catch {
     return fresh;
   }
@@ -29,20 +24,21 @@ function readSave() {
 
 const save = readSave();
 function writeSave() {
-  platform.setItem(SAVE_KEY, JSON.stringify(save));
+  try {
+    localStorage.setItem(SAVE_KEY, JSON.stringify(save));
+  } catch {
+    // Private mode or storage disabled: progress just isn't kept.
+  }
 }
 
 let current = Math.min(save.last, save.unlocked);
-let adPlaying = false;
 
-// Sound and music follow the player's settings, the site's mute button, and go quiet during ads.
 function applySound() {
-  setSoundEnabled(save.sound && !platform.muted && !adPlaying);
-  setMusicEnabled(save.music && !platform.muted && !adPlaying);
+  setSoundEnabled(save.sound);
+  setMusicEnabled(save.music);
 }
 setMusicVolume(save.musicVolume);
 applySound();
-platform.onSettingsChange(applySound);
 
 const game = new Game(
   {
@@ -80,11 +76,6 @@ function startLevel(n) {
   game.load(n);
 }
 
-// The player is "playing" whenever no popup, title screen or ad covers the board.
-function syncPlaying() {
-  platform.setPlaying(!adPlaying && !document.querySelector('.overlay:not([hidden])'));
-}
-
 // ---- progress and stars ----
 
 let shownPct = 0;
@@ -113,7 +104,6 @@ function onWin({ level, stars }) {
   save.best[level] = Math.max(save.best[level] ?? 0, stars);
   save.unlocked = Math.max(save.unlocked, level + 1);
   writeSave();
-  platform.happytime();
   $('win-title').textContent = WIN_TITLES[(level - 1) % WIN_TITLES.length];
   $('win-text').textContent = stars === 3 ? `Level ${level} complete!` : `Level ${level} complete! Solve it without hints for 3 stars.`;
   const imgs = [...$('win-stars').querySelectorAll('img')];
@@ -136,54 +126,12 @@ function onWin({ level, stars }) {
   setTimeout(() => showStarTotal(true), 650 + stars * 300);
 }
 
-// ---- hints ----
-
-// Off CrazyGames there are no ads to pay for hints, so hints stay free and uncounted.
-function showHintBadge() {
-  const badge = $('hint-badge');
-  badge.hidden = !platform.ads;
-  badge.classList.toggle('video', save.hints <= 0);
-  badge.innerHTML = save.hints > 0 ? save.hints : '<img src="assets/img/icons/play.webp" alt="Video">';
-}
-
-let toastTimer = 0;
-function toast(text) {
-  const el = $('toast');
-  el.textContent = text;
-  el.hidden = false;
-  el.classList.remove('show');
-  void el.offsetWidth;
-  el.classList.add('show');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => (el.hidden = true), 2800);
-}
-
-async function watchForHint() {
-  sfx.click();
-  await closePopup('hint-offer');
-  adPlaying = true;
-  applySound();
-  syncPlaying();
-  const watched = await platform.rewardedAd();
-  adPlaying = false;
-  applySound();
-  syncPlaying();
-  if (!watched) return toast('No video available right now. Please try again in a moment.');
-  // A finished video always pays out: bank the hint if it can't be used right now.
-  if (!game.hint()) {
-    save.hints++;
-    writeSave();
-    showHintBadge();
-  }
-}
-
 // ---- popups ----
 
 function openPopup(id) {
   const el = $(id);
   el.classList.remove('closing');
   el.hidden = false;
-  syncPlaying();
 }
 
 function closePopup(id) {
@@ -194,7 +142,6 @@ function closePopup(id) {
     setTimeout(() => {
       el.hidden = true;
       el.classList.remove('closing');
-      syncPlaying();
       done();
     }, 220)
   );
@@ -206,7 +153,7 @@ document.querySelectorAll('[data-close]').forEach((btn) =>
     closePopup(btn.closest('.overlay').id);
   })
 );
-for (const id of ['settings', 'levels', 'hint-offer']) {
+for (const id of ['settings', 'levels']) {
   $(id).addEventListener('pointerdown', (e) => e.target === $(id) && closePopup(id));
 }
 
@@ -274,20 +221,8 @@ $('btn-replay').addEventListener('click', async () => {
 });
 
 $('btn-hint').addEventListener('click', () => {
-  if (!game.canHint()) return sfx.bad();
-  if (!platform.ads) return game.hint();
-  if (save.hints > 0) {
-    save.hints--;
-    writeSave();
-    showHintBadge();
-    game.hint();
-    return;
-  }
-  sfx.click();
-  openPopup('hint-offer');
+  if (!game.hint()) sfx.bad();
 });
-
-$('btn-watch').addEventListener('click', watchForHint);
 
 $('btn-settings').addEventListener('click', () => {
   sfx.click();
@@ -339,13 +274,11 @@ $('btn-level').addEventListener('click', () => {
 // ---- boot ----
 
 showStarTotal();
-showHintBadge();
 $('title-level').textContent = current;
 startLevel(current);
 await document.fonts?.ready;
 game.layout();
-platform.loading(false);
 $('btn-play').disabled = false;
 
 // Lets automated browser tests read the level state; inert for players.
-if (new URLSearchParams(location.search).has('test')) window.pawzzle = { game, startLevel, save, platform, isSoundEnabled, isMusicEnabled };
+if (new URLSearchParams(location.search).has('test')) window.pawzzle = { game, startLevel, save, isSoundEnabled, isMusicEnabled };
