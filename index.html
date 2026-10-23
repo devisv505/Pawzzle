@@ -25,7 +25,7 @@
         <small>Level</small><b id="level-num">1</b>
       </button>
       <div class="buttons">
-        <button class="round" id="btn-hint" aria-label="Hint"><img src="assets/img/icons/hint.webp" alt=""><span class="badge" id="hint-badge" hidden></span></button>
+        <button class="round" id="btn-hint" aria-label="Hint"><img src="assets/img/icons/hint.webp" alt=""></button>
         <button class="round" id="btn-settings" aria-label="Settings"><img src="assets/img/icons/settings.webp" alt=""></button>
       </div>
     </header>
@@ -91,26 +91,14 @@
       <button class="round close" data-close aria-label="Close"><img src="assets/img/icons/close.webp" alt=""></button>
       <div class="menu">
         <button class="btn wide" id="btn-sound"><img id="sound-icon" src="assets/img/icons/sound.webp" alt=""> <span id="sound-label">Sound on</span></button>
+        <button class="btn wide" id="btn-music"><img src="assets/img/icons/music.webp" alt=""> <span id="music-label">Music on</span></button>
+        <label class="volume" id="music-volume-row"><span>Music volume</span> <input type="range" id="music-volume" min="0" max="100" step="5" value="60"></label>
         <button class="btn wide secondary" id="btn-restart"><img src="assets/img/icons/restart.webp" alt=""> <span>Restart level</span></button>
         <button class="btn wide secondary" id="btn-levels"><img src="assets/img/icons/home.webp" alt=""> <span>All levels</span></button>
       </div>
       <p class="card-text small">Tip: tap a piece in the tray to rotate it. While dragging, tap with a second finger, press R or scroll to rotate. Stroke a cat up and down with the mouse to make it purr.</p>
     </div>
   </div>
-
-  <div class="overlay" id="hint-offer" hidden>
-    <div class="card">
-      <div class="ribbon"><span>Need a hint?</span></div>
-      <button class="round close" data-close aria-label="Close"><img src="assets/img/icons/close.webp" alt=""></button>
-      <img class="offer-icon" src="assets/img/icons/hint.webp" alt="">
-      <p class="card-text">You're out of free hints. Watch a short video and a cat will jump into its spot.</p>
-      <div class="actions">
-        <button class="btn pulse" id="btn-watch"><img src="assets/img/icons/play.webp" alt=""> <span>Watch video</span></button>
-      </div>
-    </div>
-  </div>
-
-  <div class="toast" id="toast" role="status" hidden></div>
 
   <div class="overlay" id="levels" hidden>
     <div class="card">
